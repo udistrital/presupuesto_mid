@@ -29,6 +29,7 @@ func main() {
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 	}))
+
 	mongoProcess.PresupuestoMongoJobInit()
 	beego.Run()
 

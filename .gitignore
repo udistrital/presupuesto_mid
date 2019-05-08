@@ -6,3 +6,4 @@ todo/todo
 *.exe~
 lastupdate.*
 presupuesto_mid
+custom.env

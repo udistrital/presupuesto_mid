@@ -10,13 +10,12 @@ services:
       - .:/go/src/${API_BASE_DIR}/${API_NAME}
     ports: 
       - "${PORT}:${PORT}"
+    env_file:
+      - ./.env
     environment:
       - PRESUPUESTO_API_MID_HTTP_PORT=${PORT}
       - API_NAME=${API_NAME}
-      - RUN_MODE=dev 
-      - API_FINANCIERA_URL_CRUD=${API_FINANCIERA_URL_CRUD}
-      - API_FINANCIERA_PORT_CRUD=${API_FINANCIERA_PORT_CRUD}
-      - API_FINANCIERA_NS_CRUD=${API_FINANCIERA_NS_CRUD}
+      - RUN_MODE=dev
       - SERVICE_TAGS=traefik.enable=true,traefik.frontend.entryPoints=http,traefik.frontend.rule=Host:${SERVICE_NAME}.localhost   
     command: sh -c 'cd ${API_BASE_DIR}/${API_NAME};go get -v ./...; bee run'
     networks: 

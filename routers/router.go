@@ -24,6 +24,11 @@ func init() {
 				&controllers.ApropiacionController{},
 			),
 		),
+		beego.NSNamespace("/disponibilidad",
+			beego.NSInclude(
+				&controllers.DisponibilidadController{},
+			),
+		),
 		beego.NSNamespace("/ingreso_sin_situacion_fondos",
 			beego.NSInclude(
 				&controllers.IngresoSinSituacionFondosController{},

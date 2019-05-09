@@ -34,6 +34,11 @@ func init() {
 				&controllers.HomologacionRubroController{},
 			),
 		),
+		beego.NSNamespace("/registro_presupuestal",
+			beego.NSInclude(
+				&controllers.RegistroPresupuestalController{},
+			),
+		),
 		beego.NSNamespace("/ingreso_sin_situacion_fondos",
 			beego.NSInclude(
 				&controllers.IngresoSinSituacionFondosController{},

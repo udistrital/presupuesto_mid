@@ -29,6 +29,11 @@ func init() {
 				&controllers.DisponibilidadController{},
 			),
 		),
+		beego.NSNamespace("/rubro_homologado",
+			beego.NSInclude(
+				&controllers.HomologacionRubroController{},
+			),
+		),
 		beego.NSNamespace("/ingreso_sin_situacion_fondos",
 			beego.NSInclude(
 				&controllers.IngresoSinSituacionFondosController{},

@@ -36,7 +36,7 @@ func (c *ApropiacionController) Post() {
 		try.This(func() {
 			mongoData := v["Rubro"].(map[string]interface{})
 			v["Rubro"] = map[string]interface{}{"Id": v["Rubro"].(map[string]interface{})["Id"]}
-			urlcrud := "http://" + beego.AppConfig.String("Urlcrud") + ":" + beego.AppConfig.String("Portcrud") + "/" + beego.AppConfig.String("Nscrud") + "/apropiacion/"
+			urlcrud := "http://" + beego.AppConfig.String("crudService")+"apropiacion/"
 			if err = request.SendJson(urlcrud, "POST", &res, &v); err == nil {
 				if res["Type"] != nil && res["Type"].(string) == "success" {
 					mongoData["Id"] = res["Body"].(map[string]interface{})["Id"]
@@ -106,7 +106,7 @@ func (c *ApropiacionController) Put() {
 			valorAnt := v["ApropiacionInicial"].(float64)
 			valorAntStr := strconv.Itoa(int(valorAnt))
 			mongoData := v
-			urlcrud := "http://" + beego.AppConfig.String("Urlcrud") + ":" + beego.AppConfig.String("Portcrud") + "/" + beego.AppConfig.String("Nscrud") + "/apropiacion/" + "/UpdateApropiacionValue/" + idStr + "/" + valStr
+			urlcrud := "http://" + beego.AppConfig.String("crudService")+"apropiacion/" + "/UpdateApropiacionValue/" + idStr + "/" + valStr
 			if err = request.SendJson(urlcrud, "PUT", &res, nil); err == nil {
 				if res["Type"] != nil && res["Type"].(string) == "success" {
 					mongoData["ApropiacionInicial"], _ = strconv.Atoi(valStr)
@@ -126,7 +126,7 @@ func (c *ApropiacionController) Put() {
 
 						}
 					} else {
-						urlcrud = "http://" + beego.AppConfig.String("Urlcrud") + ":" + beego.AppConfig.String("Portcrud") + "/" + beego.AppConfig.String("Nscrud") + "/apropiacion/" + "/UpdateApropiacionValue/" + idStr + "/" + valorAntStr
+						urlcrud = "http://" + beego.AppConfig.String("crudService")+"apropiacion/" + "/UpdateApropiacionValue/" + idStr + "/" + valorAntStr
 						if err := request.SendJson(urlcrud, "PUT", &resM, nil);  err == nil {
 							fmt.Println("actualizado correctamente")
 							panic("Mongo API not Found")

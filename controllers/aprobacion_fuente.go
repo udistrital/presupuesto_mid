@@ -42,7 +42,7 @@ func (c *AprobacionFuenteController) ValorMovimientoFuente() {
 			if idapropiacion, err := c.GetInt("idapropiacion"); err == nil {
 
 				var Movimiento []map[string]interface{}
-				if err := request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/movimiento_fuente_financiamiento_apropiacion?query=FuenteFinanciamientoApropiacion.FuenteFinanciamiento.Id:"+strconv.Itoa(idfuente)+",FuenteFinanciamientoApropiacion.Apropiacion.Id:"+strconv.Itoa(idapropiacion)+",FuenteFinanciamientoApropiacion.Dependencia:"+strconv.Itoa(iddependencia), &Movimiento); err == nil {
+				if err := request.GetJson("http://"+beego.AppConfig.String("crudService")+"movimiento_fuente_financiamiento_apropiacion?query=FuenteFinanciamientoApropiacion.FuenteFinanciamiento.Id:"+strconv.Itoa(idfuente)+",FuenteFinanciamientoApropiacion.Apropiacion.Id:"+strconv.Itoa(idapropiacion)+",FuenteFinanciamientoApropiacion.Dependencia:"+strconv.Itoa(iddependencia), &Movimiento); err == nil {
 					if Movimiento != nil {
 
 						for _, Movimientos := range Movimiento {
@@ -136,7 +136,7 @@ func (c *AprobacionFuenteController) ValorMovimientoFuenteTraslado() {
 				if valortraslado, err := c.GetFloat("traslado"); err == nil {
 
 					var Movimiento []map[string]interface{}
-					if err := request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/movimiento_fuente_financiamiento_apropiacion?query=FuenteFinanciamientoApropiacion.FuenteFinanciamiento.Id:"+strconv.Itoa(idfuente)+",FuenteFinanciamientoApropiacion.Apropiacion.Id:"+strconv.Itoa(idapropiacion)+",FuenteFinanciamientoApropiacion.Dependencia:"+strconv.Itoa(iddependencia), &Movimiento); err == nil {
+					if err := request.GetJson("http://"+beego.AppConfig.String("crudService")+"movimiento_fuente_financiamiento_apropiacion?query=FuenteFinanciamientoApropiacion.FuenteFinanciamiento.Id:"+strconv.Itoa(idfuente)+",FuenteFinanciamientoApropiacion.Apropiacion.Id:"+strconv.Itoa(idapropiacion)+",FuenteFinanciamientoApropiacion.Dependencia:"+strconv.Itoa(iddependencia), &Movimiento); err == nil {
 						if Movimiento != nil {
 
 							for _, Movimientos := range Movimiento {
@@ -267,7 +267,7 @@ func (c *AprobacionFuenteController) ValorMovimientoFuenteLista() {
 
 	if idfuente, err := c.GetInt("idfuente"); err == nil {
 
-		if err := request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/movimiento_fuente_financiamiento_apropiacion?limit=-1&query=FuenteFinanciamientoApropiacion.Apropiacion.Rubro.Codigo__startswith:3-3-001-15-01-08-0119-,FuenteFinanciamientoApropiacion.FuenteFinanciamiento.Id:"+strconv.Itoa(idfuente), &Movimiento); err == nil {
+		if err := request.GetJson("http://"+beego.AppConfig.String("crudService")+"movimiento_fuente_financiamiento_apropiacion?limit=-1&query=FuenteFinanciamientoApropiacion.Apropiacion.Rubro.Codigo__startswith:3-3-001-15-01-08-0119-,FuenteFinanciamientoApropiacion.FuenteFinanciamiento.Id:"+strconv.Itoa(idfuente), &Movimiento); err == nil {
 			if Movimiento != nil {
 
 				for _, Movimientos := range Movimiento {
@@ -318,7 +318,7 @@ func (c *AprobacionFuenteController) ValorMovimientoFuenteLista() {
 
 	} else {
 
-		if err := request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/movimiento_fuente_financiamiento_apropiacion?limit=-1&query=FuenteFinanciamientoApropiacion.Apropiacion.Rubro.Codigo__startswith:3-3-001-15-01-08-0119-", &Movimiento); err == nil {
+		if err := request.GetJson("http://"+beego.AppConfig.String("crudService")+"movimiento_fuente_financiamiento_apropiacion?limit=-1&query=FuenteFinanciamientoApropiacion.Apropiacion.Rubro.Codigo__startswith:3-3-001-15-01-08-0119-", &Movimiento); err == nil {
 			if Movimiento != nil {
 
 				for _, Movimientos := range Movimiento {
@@ -388,7 +388,7 @@ func (c *AprobacionFuenteController) ValorMovimientoFuenteListaFunc() {
 
 	if idfuente, err := c.GetInt("idfuente"); err == nil {
 
-		if err := request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/movimiento_fuente_financiamiento_apropiacion?limit=-1&query=FuenteFinanciamientoApropiacion.Apropiacion.Rubro.Codigo__startswith:3-1-,FuenteFinanciamientoApropiacion.FuenteFinanciamiento.Id:"+strconv.Itoa(idfuente), &Movimiento); err == nil {
+		if err := request.GetJson("http://"+beego.AppConfig.String("crudService")+"movimiento_fuente_financiamiento_apropiacion?limit=-1&query=FuenteFinanciamientoApropiacion.Apropiacion.Rubro.Codigo__startswith:3-1-,FuenteFinanciamientoApropiacion.FuenteFinanciamiento.Id:"+strconv.Itoa(idfuente), &Movimiento); err == nil {
 			if Movimiento != nil {
 
 				for _, Movimientos := range Movimiento {
@@ -439,7 +439,7 @@ func (c *AprobacionFuenteController) ValorMovimientoFuenteListaFunc() {
 
 	} else {
 
-		if err := request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/movimiento_fuente_financiamiento_apropiacion?limit=-1&query=FuenteFinanciamientoApropiacion.Apropiacion.Rubro.Codigo__startswith:3-1-", &Movimiento); err == nil {
+		if err := request.GetJson("http://"+beego.AppConfig.String("crudService")+"movimiento_fuente_financiamiento_apropiacion?limit=-1&query=FuenteFinanciamientoApropiacion.Apropiacion.Rubro.Codigo__startswith:3-1-", &Movimiento); err == nil {
 			if Movimiento != nil {
 
 				for _, Movimientos := range Movimiento {

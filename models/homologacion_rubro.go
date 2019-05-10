@@ -173,7 +173,7 @@ func getOrganizacionDisponibilidad (data interface{},params ...interface{}) (res
 		}else {
 			beego.Error("error",err)
 		}
-		if err := request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/rubro_homologado/GetRecordsNumberRubroHomologadoById/"+strconv.FormatFloat(rubroHomolMap["Id"].(float64),'f',-1,64),&cntRubroHomologado) ; err == nil {
+		if err := request.GetJson("http://"+beego.AppConfig.String("crudService")+"rubro_homologado/GetRecordsNumberRubroHomologadoById/"+strconv.FormatFloat(rubroHomolMap["Id"].(float64),'f',-1,64),&cntRubroHomologado) ; err == nil {
 		if cntRubroHomologado["Body"].(float64)>= 1 {
 				rubroHomolMap["Disponibilidad"]=false
 			}else{

@@ -44,11 +44,11 @@ func (c *IngresoSinSituacionFondosController) Post() {
 
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
 		ingresoSinSituacionFondos:=v["IngresoSinSituacionFondos"]
-		if err := request.SendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/ingreso_sin_situacion_fondos", "POST", &respuesta, ingresoSinSituacionFondos); err == nil {
+		if err := request.SendJson("http://"+beego.AppConfig.String("crudService")+"ingreso_sin_situacion_fondos", "POST", &respuesta, ingresoSinSituacionFondos); err == nil {
 			if (strings.Compare(respuesta["Type"].(string),"success")==0){
-				 if err = request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/estado_ingreso_sin_situacion_fondos?query=numeroOrden:1", &estadoResp); err == nil {
+				 if err = request.GetJson("http://"+beego.AppConfig.String("crudService")+"estado_ingreso_sin_situacion_fondos?query=numeroOrden:1", &estadoResp); err == nil {
 					 estadoIng := &estadoIngreso {IngresoSinSituacionFondos:respuesta["Body"],EstadoIngresoSinSituacionFondos:estadoResp[0],Activo:true}
-					 if err := request.SendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/ingreso_sin_situacion_fondos_estado", "POST", &respuestaCreaEst, estadoIng); err == nil {
+					 if err := request.SendJson("http://"+beego.AppConfig.String("crudService")+"ingreso_sin_situacion_fondos_estado", "POST", &respuestaCreaEst, estadoIng); err == nil {
 						if (strings.Compare(respuestaCreaEst["Type"].(string),"success")==0){
 							alert:=models.Alert{Type:"success",Code:"S_543",Body:respuesta["Body"]}
 							c.Data["json"] = alert
@@ -90,7 +90,7 @@ func (c *IngresoSinSituacionFondosController) ChangeState() {
 	var v interface{}
 	var respuesta map[string]interface{}
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
-		if err := request.SendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/ingreso_sin_situacion_fondos_estado/ChangeExistingStates", "POST", &respuesta, v); err == nil {
+		if err := request.SendJson("http://"+beego.AppConfig.String("crudService")+"ingreso_sin_situacion_fondos_estado/ChangeExistingStates", "POST", &respuesta, v); err == nil {
 			if (strings.Compare(respuesta["Type"].(string),"success")==0){
 				alert:=models.Alert{Type:"success",Code:"S_543",Body:respuesta["Body"]}
 				c.Data["json"] = alert

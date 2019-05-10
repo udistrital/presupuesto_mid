@@ -60,7 +60,7 @@ func (c *MovimientoApropiacionController) AprobarMovimietnoApropiacion() {
 			}
 			_, _, compr := ComprobacionMovimiento(afectacion, UE, vigencia)
 			if compr {
-				Urlcrud := "http://" + beego.AppConfig.String("Urlcrud") + ":" + beego.AppConfig.String("Portcrud") + "/" + beego.AppConfig.String("Nscrud") + "/movimiento_apropiacion/AprobarMovimietnoApropiacion"
+				Urlcrud := "http://" + beego.AppConfig.String("crudService")+"movimiento_apropiacion/AprobarMovimietnoApropiacion"
 				if err := request.SendJson(Urlcrud, "POST", &res, &v); err == nil {
 					//beego.Info("Data to Send ", res)
 					c.Data["json"] = res
@@ -272,7 +272,7 @@ func AddMovimientoApropiacionMongo(parameter ...interface{}) (err interface{}) {
 	}).Catch(func(e try.E) {
 		var resC interface{}
 		infoMovimiento := parameter[0].(map[string]interface{})["Movimiento"].(map[string]interface{})
-		Urlcrud := "http://" + beego.AppConfig.String("Urlcrud") + ":" + beego.AppConfig.String("Portcrud") + "/" + beego.AppConfig.String("Nscrud") + "/movimiento_apropiacion/" + strconv.Itoa(int(idMov))
+		Urlcrud := "http://" + beego.AppConfig.String("crudService")+"movimiento_apropiacion/" + strconv.Itoa(int(idMov))
 		estadoMov := infoMovimiento["EstadoMovimientoApropiacion"].(map[string]interface{})
 		estadoMov["Id"] = 1
 		infoMovimiento["EstadoMovimientoApropiacion"] = estadoMov
@@ -281,7 +281,7 @@ func AddMovimientoApropiacionMongo(parameter ...interface{}) (err interface{}) {
 			for _, data := range movimientos {
 				if dispo, e := data["Disponibilidad"].(map[string]interface{}); e {
 					idDisp := dispo["Id"].(float64)
-					Urlcrud := "http://" + beego.AppConfig.String("Urlcrud") + ":" + beego.AppConfig.String("Portcrud") + "/" + beego.AppConfig.String("Nscrud") + "/disponibilidad/DeleteDisponibilidadMovimiento/" + strconv.Itoa(int(idDisp))
+					Urlcrud := "http://" + beego.AppConfig.String("crudService")+"disponibilidad/DeleteDisponibilidadMovimiento/" + strconv.Itoa(int(idDisp))
 					if errorDelete := request.SendJson(Urlcrud, "DELETE", &resC, nil); errorDelete == nil {
 						beego.Info(resC)
 					} else {

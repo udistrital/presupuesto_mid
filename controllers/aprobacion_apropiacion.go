@@ -47,7 +47,7 @@ func (c *AprobacionController) Aprobar() {
 	var apropiacion []models.Apropiacion
 	//var respuesta interface{}
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &apropiacion); err == nil {
-		if err := request.GetJson("http://"+beego.AppConfig.String("Urlruler")+":"+beego.AppConfig.String("Portruler")+"/"+beego.AppConfig.String("Nsruler")+"/predicado?limit=0"+postdominio, &predicados); err == nil {
+		if err := request.GetJson("http://"+beego.AppConfig.String("crudService")+"predicado?limit=0"+postdominio, &predicados); err == nil {
 			//var reglas string = ""
 			var reglasbase string = ""
 			//var reglasinyectadas string = ""
@@ -72,7 +72,7 @@ func (c *AprobacionController) Aprobar() {
 					estado := models.EstadoApropiacion{Id: estadoAp}
 					apropiacion[i].Estado = &estado
 					var respuesta interface{}
-					if err := request.SendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/apropiacion/"+strconv.Itoa(apropiacion[i].Id), "PUT", &respuesta, &apropiacion[i]); err == nil {
+					if err := request.SendJson("http://"+beego.AppConfig.String("crudService")+"apropiacion/"+strconv.Itoa(apropiacion[i].Id), "PUT", &respuesta, &apropiacion[i]); err == nil {
 						if estadoAp == 1 {
 							alertas[0] = "error"
 							alertas = append(alertas, "Apropiacion del rubro "+apropiacion[i].Rubro.Codigo+" No aprobada, la suma de las apropiaciones hijo no corresponde al valor de esta apropiacion")
@@ -112,11 +112,11 @@ func comprobarApropiacion(padre models.Apropiacion) string {
 	var regla string
 	var apropiacionHijo []models.Apropiacion
 	var hoja int
-	err := request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/rubro_rubro?limit=0&query=RubroPadre.Id:"+strconv.Itoa(padre.Rubro.Id)+",RubroPadre.Vigencia:"+strconv.FormatFloat(padre.Vigencia, 'f', -1, 64), &rubroHijo)
+	err := request.GetJson("http://"+beego.AppConfig.String("crudService")+"rubro_rubro?limit=0&query=RubroPadre.Id:"+strconv.Itoa(padre.Rubro.Id)+",RubroPadre.Vigencia:"+strconv.FormatFloat(padre.Vigencia, 'f', -1, 64), &rubroHijo)
 	if rubroHijo != nil && err == nil {
 		for i := 0; i < len(rubroHijo); i++ {
 
-			err := request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/apropiacion?limit=0&query=Vigencia:"+strconv.FormatFloat(padre.Vigencia, 'f', -1, 64)+",Rubro.Id:"+strconv.Itoa(rubroHijo[i].RubroHijo.Id)+"", &apropiacionHijo)
+			err := request.GetJson("http://"+beego.AppConfig.String("crudService")+"apropiacion?limit=0&query=Vigencia:"+strconv.FormatFloat(padre.Vigencia, 'f', -1, 64)+",Rubro.Id:"+strconv.Itoa(rubroHijo[i].RubroHijo.Id)+"", &apropiacionHijo)
 			if apropiacionHijo != nil && err == nil {
 				hoja = 0
 				for i := 0; i < len(apropiacionHijo); i++ {
@@ -193,13 +193,13 @@ func (c *AprobacionController) InformacionAsignacionInicial() {
 				for _, rpadre := range res {
 					var rubro []map[string]interface{}
 					urlmongo := "http://" + beego.AppConfig.String("financieraMongoCurdApiService") + "arbol_rubro_apropiaciones/ArbolApropiacion/" + rpadre + "/" + strconv.Itoa(unidadejecutora) + "/" + strconv.Itoa(vigencia)
-					//if err = request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/rubro?query=Codigo:"+rpadre, &rubro); err == nil {
+					//if err = request.GetJson("http://"+beego.AppConfig.String("crudService")+"rubro?query=Codigo:"+rpadre, &rubro); err == nil {
 					if err = request.GetJson(urlmongo, &rubro); err == nil {
 						beego.Info("Rubro ", rubro[0])
 						if rubro[0]["Id"] != nil {
 							infoSaldoInicial = append(infoSaldoInicial, rubro[0])
 
-							/*if err = request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/apropiacion/SaldoApropiacionPadre/"+strconv.Itoa(rubro[0].Id)+"?Vigencia="+strconv.Itoa(vigencia)+"&UnidadEjecutora="+strconv.Itoa(unidadejecutora), &saldo); err == nil {
+							/*if err = request.GetJson("http://"+beego.AppConfig.String("crudService")+"apropiacion/SaldoApropiacionPadre/"+strconv.Itoa(rubro[0].Id)+"?Vigencia="+strconv.Itoa(vigencia)+"&UnidadEjecutora="+strconv.Itoa(unidadejecutora), &saldo); err == nil {
 								if saldo != nil {
 									//infoSaldoInicial = append(infoSaldoInicial, map[string]interface{}{"Id": rubro[0].Id, "Codigo": rpadre, "Nombre": rubro[0].Nombre, "SaldoInicial": saldo["original"]})
 								}
@@ -270,7 +270,7 @@ func (c *AprobacionController) AprobacionAsignacionInicial() {
 					if err == nil {
 						if aprobado == "1" {
 							var res interface{}
-							if err := request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/apropiacion/AprobacionAsignacionInicial"+"?Vigencia="+strconv.Itoa(vigencia)+"&UnidadEjecutora="+strconv.Itoa(unidadejecutora), &res); err == nil {
+							if err := request.GetJson("http://"+beego.AppConfig.String("crudService")+"apropiacion/AprobacionAsignacionInicial"+"?Vigencia="+strconv.Itoa(vigencia)+"&UnidadEjecutora="+strconv.Itoa(unidadejecutora), &res); err == nil {
 								c.Data["json"] = res
 
 							} else {

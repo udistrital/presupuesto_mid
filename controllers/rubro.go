@@ -30,7 +30,7 @@ func (c *RubroController) RegistrarRubro() {
 			res := make(map[string]interface{})
 			rubroData := v.(map[string]interface{})
 			if rubroData["RubroPadre"] != nil { //Si se registra Un rubro con padre
-				urlcrud := "http://" + beego.AppConfig.String("Urlcrud") + ":" + beego.AppConfig.String("Portcrud") + "/" + beego.AppConfig.String("Nscrud") + "/rubro_rubro"
+				urlcrud := "http://" + beego.AppConfig.String("crudService")+"rubro_rubro"
 				if err := request.SendJson(urlcrud, "POST", &res, &rubroData); err == nil {
 					//Cuando se registra el rubro, se debe mandar una petición a MongoApi para registrar el nuevo rubro.
 					//En este caso se genera un map con la estructura que recibe dicho api.
@@ -80,7 +80,7 @@ func (c *RubroController) RegistrarRubro() {
 				}
 			} else if rubroData["RubroHijo"] != nil { //Si se registra un rubro Padre
 				rubro := rubroData["RubroHijo"]
-				urlcrud := "http://" + beego.AppConfig.String("Urlcrud") + ":" + beego.AppConfig.String("Portcrud") + "/" + beego.AppConfig.String("Nscrud") + "/rubro"
+				urlcrud := "http://" + beego.AppConfig.String("crudService")+"rubro"
 				if err := request.SendJson(urlcrud, "POST", &res, &rubro); err == nil {
 					//Cuando se registra el rubro, se debe mandar una petición a MongoApi para registrar el nuevo rubro.
 					//En este caso se genera un map con la estructura que recibe dicho api.
@@ -155,7 +155,7 @@ func (c *RubroController) RegistrarRubro() {
 func (c *RubroController) EliminarRubro() {
 	try.This(func() {
 		idStr := c.Ctx.Input.Param(":id")
-		urlcrud := "http://" + beego.AppConfig.String("Urlcrud") + ":" + beego.AppConfig.String("Portcrud") + "/" + beego.AppConfig.String("Nscrud") + "/rubro/" + idStr
+		urlcrud := "http://" + beego.AppConfig.String("crudService")+"rubro/" + idStr
 		var res map[string]interface{}
 		if err := request.SendJson(urlcrud, "DELETE", &res, nil); err == nil {
 			if res["Type"].(string) == "success" {

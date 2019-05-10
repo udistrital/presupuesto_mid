@@ -235,9 +235,9 @@ func (c *DisponibilidadController) ListaDisponibilidades() {
 	vigenciaStr := c.Ctx.Input.Param(":vigencia")
 	vigencia, err1 := strconv.Atoi(vigenciaStr)
 	UnidadEjecutora, err2 := c.GetInt("UnidadEjecutora")
-	beego.Info("http://" + beego.AppConfig.String("Urlcrud") + ":" + beego.AppConfig.String("Portcrud") + "/" + beego.AppConfig.String("Nscrud") + "/disponibilidad?limit=" + strconv.FormatInt(limit, 10) + "&offset=" + strconv.FormatInt(offset, 10) + "&query=Vigencia:" + strconv.Itoa(vigencia) + ",DisponibilidadApropiacion.Apropiacion.Rubro.UnidadEjecutora:" + strconv.Itoa(UnidadEjecutora) + query)
+	beego.Info("http://" + beego.AppConfig.String("crudService")+"disponibilidad?limit=" + strconv.FormatInt(limit, 10) + "&offset=" + strconv.FormatInt(offset, 10) + "&query=Vigencia:" + strconv.Itoa(vigencia) + ",DisponibilidadApropiacion.Apropiacion.Rubro.UnidadEjecutora:" + strconv.Itoa(UnidadEjecutora) + query)
 	if err1 == nil && err2 == nil {
-		if err := request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/disponibilidad?limit="+strconv.FormatInt(limit, 10)+"&offset="+strconv.FormatInt(offset, 10)+"&query=Vigencia:"+strconv.Itoa(vigencia)+",DisponibilidadApropiacion.Apropiacion.Rubro.UnidadEjecutora:"+strconv.Itoa(UnidadEjecutora)+query, &disponibilidades); err == nil {
+		if err := request.GetJson("http://"+beego.AppConfig.String("crudService")+"disponibilidad?limit="+strconv.FormatInt(limit, 10)+"&offset="+strconv.FormatInt(offset, 10)+"&query=Vigencia:"+strconv.Itoa(vigencia)+",DisponibilidadApropiacion.Apropiacion.Rubro.UnidadEjecutora:"+strconv.Itoa(UnidadEjecutora)+query, &disponibilidades); err == nil {
 			if disponibilidades != nil {
 				done := make(chan interface{})
 				defer close(done)
@@ -285,14 +285,14 @@ func (c *DisponibilidadController) DisponibilidadByNecesidad() {
 				c.Data["json"] = models.Alert{Code: "", Type: "error", Body: err.Error()}
 				c.ServeJSON()
 			}
-			if err := request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/disponibilidad?limit=1&query=Solicitud:"+strconv.FormatFloat(id, 'f', -1, 64), &resdisponibilidad); err == nil {
+			if err := request.GetJson("http://"+beego.AppConfig.String("crudService")+"disponibilidad?limit=1&query=Solicitud:"+strconv.FormatFloat(id, 'f', -1, 64), &resdisponibilidad); err == nil {
 				err = formatdata.FillStruct(resdisponibilidad[0]["Id"], &id)
 				if err != nil {
 					c.Data["json"] = models.Alert{Code: "", Type: "error", Body: err.Error()}
 					c.ServeJSON()
 				}
 				var rp []map[string]interface{}
-				if err := request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/registro_presupuestal?query=RegistroPresupuestalDisponibilidadApropiacion.DisponibilidadApropiacion.Disponibilidad.Id:"+strconv.FormatFloat(id, 'f', -1, 64), &rp); err == nil {
+				if err := request.GetJson("http://"+beego.AppConfig.String("crudService")+"registro_presupuestal?query=RegistroPresupuestalDisponibilidadApropiacion.DisponibilidadApropiacion.Disponibilidad.Id:"+strconv.FormatFloat(id, 'f', -1, 64), &rp); err == nil {
 					resdisponibilidad[0]["registro_presupuestal"] = rp
 					c.Data["json"] = resdisponibilidad
 				} else {
@@ -820,7 +820,7 @@ func expedirDisponibilidadConNecesidad(infoSolicitudes []map[string]interface{},
 			for _, infoRubro := range rubrosSolicitud {
 				//Solicitar el saldo de la apropiacion objetivo.
 				//Se debe consultar la informacion del rubro para poder consumir saldo desde mongo
-				if err := request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/apropiacion?query=Id:"+strconv.Itoa(int(infoRubro["Apropiacion"].(float64))), &apropiacion); err == nil {
+				if err := request.GetJson("http://"+beego.AppConfig.String("crudService")+"apropiacion?query=Id:"+strconv.Itoa(int(infoRubro["Apropiacion"].(float64))), &apropiacion); err == nil {
 					mapSaldoApropiacion = CalcularSaldoApropiacion(apropiacion[0]["Rubro"].(map[string]interface{})["Codigo"].(string), int(apropiacion[0]["Rubro"].(map[string]interface{})["UnidadEjecutora"].(float64)), int(apropiacion[0]["Vigencia"].(float64)))
 					beego.Info("Saldo Apr: ", mapSaldoApropiacion)
 					if mapSaldoApropiacion["saldo"] >= 0 {
@@ -876,7 +876,7 @@ func expedirDisponibilidadConNecesidad(infoSolicitudes []map[string]interface{},
 				DisponibilidadProcesoExterno["TipoDisponibilidad"] = TipoDisponibilidad
 				infoDisponibilidad["DisponibilidadProcesoExterno"] = DisponibilidadProcesoExterno
 				var respuesta models.Alert
-				err := request.SendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/disponibilidad", "POST", &respuesta, &infoDisponibilidad)
+				err := request.SendJson("http://"+beego.AppConfig.String("crudService")+"disponibilidad", "POST", &respuesta, &infoDisponibilidad)
 				if err == nil && respuesta.Type != "error" {
 					var respuestaMod interface{}
 					modsol := solicitud["SolicitudDisponibilidad"].(map[string]interface{})
@@ -917,7 +917,7 @@ func (c *DisponibilidadController) ValorDisponibilidadesFuenteRubroDependencia()
 		if iddependencia, err := c.GetInt("iddependencia"); err == nil {
 			if idapropiacion, err := c.GetInt("idapropiacion"); err == nil {
 				var apropiacion map[string]interface{}
-				if err := request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/apropiacion/"+strconv.Itoa(idapropiacion), &apropiacion); err == nil {
+				if err := request.GetJson("http://"+beego.AppConfig.String("crudService")+"apropiacion/"+strconv.Itoa(idapropiacion), &apropiacion); err == nil {
 					if apropiacion != nil {
 						var dependencias []map[string]interface{}
 						fechaconsulta := time.Date(int(apropiacion["Vigencia"].(float64)), 1, 1, 0, 0, 0, 0, time.Local).Format("2006-01-02")
@@ -936,7 +936,7 @@ func (c *DisponibilidadController) ValorDisponibilidadesFuenteRubroDependencia()
 									for _, solicitud_disponibilidad := range solicitudDisponibilidades {
 										var disponibilidades []map[string]interface{}
 										fmt.Println("/disponibilidad_apropiacion?query=Disponibilidad.Solicitud:" + strconv.Itoa(int(solicitud_disponibilidad["Id"].(float64))) + ",Apropiacion.Id:" + strconv.Itoa(idapropiacion))
-										if err := request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/disponibilidad_apropiacion?query=Disponibilidad.Solicitud:"+strconv.Itoa(int(solicitud_disponibilidad["Id"].(float64)))+",Apropiacion.Id:"+strconv.Itoa(idapropiacion)+",FuenteFinanciamiento:"+strconv.Itoa(idfuente), &disponibilidades); err == nil {
+										if err := request.GetJson("http://"+beego.AppConfig.String("crudService")+"disponibilidad_apropiacion?query=Disponibilidad.Solicitud:"+strconv.Itoa(int(solicitud_disponibilidad["Id"].(float64)))+",Apropiacion.Id:"+strconv.Itoa(idapropiacion)+",FuenteFinanciamiento:"+strconv.Itoa(idfuente), &disponibilidades); err == nil {
 											if disponibilidades != nil {
 												for _, disponibilidad := range disponibilidades {
 													res = append(res, disponibilidad)
@@ -992,7 +992,7 @@ func (c *DisponibilidadController) ValorDisponibilidadesFuenteRubroDependencia()
 func ValorDisponibilidadPorFuenteDependencia(idfuente, iddependencia, idapropiacion int) (error, map[string]interface{}) {
 	var apropiacion map[string]interface{}
 	var res []interface{}
-	if err := request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/apropiacion/"+strconv.Itoa(idapropiacion), &apropiacion); err == nil {
+	if err := request.GetJson("http://"+beego.AppConfig.String("crudService")+"apropiacion/"+strconv.Itoa(idapropiacion), &apropiacion); err == nil {
 		if apropiacion != nil {
 			var dependencias []map[string]interface{}
 			fechaconsulta := time.Date(int(apropiacion["Vigencia"].(float64)), 1, 1, 0, 0, 0, 0, time.Local).Format("2006-01-02")
@@ -1009,7 +1009,7 @@ func ValorDisponibilidadPorFuenteDependencia(idfuente, iddependencia, idapropiac
 					if err := request.GetJson("http://"+beego.AppConfig.String("argoService")+peticion, &solicitudDisponibilidades); err == nil {
 						for _, solicitud_disponibilidad := range solicitudDisponibilidades {
 							var disponibilidades []map[string]interface{}
-							if err := request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/disponibilidad_apropiacion?query=Disponibilidad.Solicitud:"+strconv.Itoa(int(solicitud_disponibilidad["Id"].(float64)))+",Apropiacion.Id:"+strconv.Itoa(idapropiacion)+",FuenteFinanciamiento:"+strconv.Itoa(idfuente), &disponibilidades); err == nil {
+							if err := request.GetJson("http://"+beego.AppConfig.String("crudService")+"disponibilidad_apropiacion?query=Disponibilidad.Solicitud:"+strconv.Itoa(int(solicitud_disponibilidad["Id"].(float64)))+",Apropiacion.Id:"+strconv.Itoa(idapropiacion)+",FuenteFinanciamiento:"+strconv.Itoa(idfuente), &disponibilidades); err == nil {
 								if disponibilidades != nil {
 									for _, disponibilidad := range disponibilidades {
 										res = append(res, disponibilidad)
@@ -1057,7 +1057,7 @@ func (c *DisponibilidadController) AprobarAnulacionDisponibilidad() {
 		var v models.AnulacionDisponibilidad
 		var res models.Alert
 		if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
-			Urlcrud := "http://" + beego.AppConfig.String("Urlcrud") + ":" + beego.AppConfig.String("Portcrud") + "/" + beego.AppConfig.String("Nscrud") + "/disponibilidad/AprobarAnulacion"
+			Urlcrud := "http://" + beego.AppConfig.String("crudService")+"disponibilidad/AprobarAnulacion"
 			beego.Info("URL ", Urlcrud)
 			if err := request.SendJson(Urlcrud, "POST", &res, &v); err == nil {
 				c.Data["json"] = res
@@ -1116,7 +1116,7 @@ func AddDisponibilidadMongo(parameter ...interface{}) (err interface{}) {
 		infoDisp["Vigencia"] = strconv.Itoa(int(infoDisp["Vigencia"].(float64)))
 		var afectacion []map[string]interface{}
 		idDisp := int(infoDisp["Id"].(float64))
-		Urlcrud := "http://" + beego.AppConfig.String("Urlcrud") + ":" + beego.AppConfig.String("Portcrud") + "/" + beego.AppConfig.String("Nscrud") + "/disponibilidad/GetPrincDisponibilidadInfo/" + strconv.Itoa(idDisp)
+		Urlcrud := "http://" + beego.AppConfig.String("crudService")+"disponibilidad/GetPrincDisponibilidadInfo/" + strconv.Itoa(idDisp)
 		if err1 := request.GetJson(Urlcrud, &afectacion); err1 == nil {
 			infoDisp["Afectacion"] = afectacion
 			dateStr := infoDisp["FechaRegistro"].(string)
@@ -1146,7 +1146,7 @@ func AddDisponibilidadMongo(parameter ...interface{}) (err interface{}) {
 		idDisp := int(infoDisp["Id"].(float64))
 		beego.Info("Exepc ", e)
 		var resC interface{}
-		Urlcrud := "http://" + beego.AppConfig.String("Urlcrud") + ":" + beego.AppConfig.String("Portcrud") + "/" + beego.AppConfig.String("Nscrud") + "/disponibilidad/DeleteDisponibilidadData/" + strconv.Itoa(idDisp)
+		Urlcrud := "http://" + beego.AppConfig.String("crudService")+"disponibilidad/DeleteDisponibilidadData/" + strconv.Itoa(idDisp)
 		if errDelete := request.SendJson(Urlcrud, "DELETE", &resC, nil); errDelete == nil {
 			fmt.Println("registro borrado correctamente")
 			beego.Info("Data ", resC)
@@ -1196,7 +1196,7 @@ func AddAnulacionCdpMongo(parameter ...interface{}) (err interface{}) {
 	}).Catch(func(e try.E) {
 		beego.Info("Exepc ", e)
 		var resC interface{}
-		Urlcrud := "http://" + beego.AppConfig.String("Urlcrud") + ":" + beego.AppConfig.String("Portcrud") + "/" + beego.AppConfig.String("Nscrud") + "/anulacion_disponibilidad/" + strconv.Itoa(infoAnulacion.Id)
+		Urlcrud := "http://" + beego.AppConfig.String("crudService")+"anulacion_disponibilidad/" + strconv.Itoa(infoAnulacion.Id)
 		infoAnulacion.EstadoAnulacion["Id"] = 2
 		if errorPut := request.SendJson(Urlcrud, "PUT", &resC, &infoAnulacion); errorPut == nil {
 			fmt.Println("actualizado correctamente")

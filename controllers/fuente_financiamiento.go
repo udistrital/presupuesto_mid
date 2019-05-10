@@ -32,7 +32,7 @@ func (c *FuenteFinanciamientoController) Post() {
 	var v map[string]interface{}
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
 		var resCrud map[string]interface{}
-		if err := request.SendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/fuente_financiamiento/RegistrarFuenteFinanciamientoTr", "POST", &resCrud, &v); err == nil {
+		if err := request.SendJson("http://"+beego.AppConfig.String("crudService")+"fuente_financiamiento/RegistrarFuenteFinanciamientoTr", "POST", &resCrud, &v); err == nil {
 			alert := models.Alert{Type: "success", Code: "S_F0001", Body: resCrud}
 			c.Data["json"] = alert
 		} else {
@@ -57,7 +57,7 @@ func (c *FuenteFinanciamientoController) RegistrarModificacionFuente() {
 	var v []map[string]interface{}
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
 		var resCrud interface{}
-		if err := request.SendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/fuente_financiamiento/MovimientoFuenteFinanciamientoTr", "POST", &resCrud, &v); err == nil {
+		if err := request.SendJson("http://"+beego.AppConfig.String("crudService")+"fuente_financiamiento/MovimientoFuenteFinanciamientoTr", "POST", &resCrud, &v); err == nil {
 			alert := models.Alert{Type: "success", Code: "S_F0001", Body: resCrud}
 			c.Data["json"] = alert
 		} else {
@@ -105,7 +105,7 @@ func AddFuenteFinanciamientoMongo(parameter ...interface{}) (err interface{}) {
 		idFuente := parameter[0].(map[string]interface{})["FuenteFinanciamiento"].(map[string]interface{})["Id"].(float64)
 		beego.Error("IdFuente ", idFuente)
 		var resCrud interface{}
-		request.SendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/fuente_financiamiento/DeleteMovimientoFuenteFinanciamientoTr/"+strconv.Itoa(int(idFuente)), "DELETE", &resCrud, nil)
+		request.SendJson("http://"+beego.AppConfig.String("crudService")+"fuente_financiamiento/DeleteMovimientoFuenteFinanciamientoTr/"+strconv.Itoa(int(idFuente)), "DELETE", &resCrud, nil)
 		beego.Error("res crud ", resCrud)
 	})
 
@@ -141,7 +141,7 @@ func AddModificacionFuenteFinanciamientoMongo(parameter ...interface{}) (err int
 		beego.Error("Data ", e)
 		infoFuente := parameter[0].(map[string]interface{})["Body"].([]interface{})
 		var resCrud interface{}
-		err := request.SendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/fuente_financiamiento/DeleteModificacionFuenteFinanciamientoTr", "POST", &resCrud, infoFuente)
+		err := request.SendJson("http://"+beego.AppConfig.String("crudService")+"fuente_financiamiento/DeleteModificacionFuenteFinanciamientoTr", "POST", &resCrud, infoFuente)
 		beego.Error("err ", err)
 		beego.Error("res crud ", resCrud)
 	})

@@ -96,7 +96,7 @@ func (c *IngresoController) AprobacionPresupuestalIngreso() {
 	var respuesta interface{}
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
 
-		if err := request.SendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/ingreso/AprobacionPresupuestalIngreso", "POST", &respuesta, v); err == nil {
+		if err := request.SendJson("http://"+beego.AppConfig.String("crudService")+"ingreso/AprobacionPresupuestalIngreso", "POST", &respuesta, v); err == nil {
 			c.Data["json"] = respuesta
 		} else {
 			beego.Error(err.Error())

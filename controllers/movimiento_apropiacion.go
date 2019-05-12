@@ -8,6 +8,7 @@ import (
 
 	"github.com/astaxie/beego"
 	"github.com/manucorporat/try"
+	"github.com/udistrital/presupuesto_mid/helpers/apropiacionHelper"
 	"github.com/udistrital/presupuesto_mid/models"
 	"github.com/udistrital/utils_oas/formatdata"
 	"github.com/udistrital/utils_oas/request"
@@ -192,7 +193,7 @@ func sumValorMovimientoAPropiacion(final bool, codigoRubro string, unidadEjecuto
 	var valorInicial float64
 	codigoPadre := strings.Split(codigoRubro, separator)
 	if final {
-		saldoObj = CalcularSaldoApropiacion(codigoPadre[0], unidadEjecutora, vigencia)
+		saldoObj = apropiacionHelper.CalcularSaldoApropiacion(codigoPadre[0], unidadEjecutora, vigencia)
 		valorInicial = saldoObj["valor_inicial"]
 	} else {
 		valorInicial = 0

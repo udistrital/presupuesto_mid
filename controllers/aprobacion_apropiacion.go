@@ -5,11 +5,15 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/udistrital/presupuesto_mid/helpers"
+	"github.com/udistrital/presupuesto_mid/helpers/apropiacionHelper"
+
 	"github.com/astaxie/beego"
 	"github.com/udistrital/presupuesto_mid/golog"
 	"github.com/udistrital/presupuesto_mid/models"
 	"github.com/udistrital/utils_oas/formatdata"
 	"github.com/udistrital/utils_oas/request"
+	"github.com/udistrital/utils_oas/resposeformat"
 	"github.com/udistrital/utils_oas/ruler"
 )
 
@@ -178,69 +182,32 @@ func comprobarApropiacion(padre models.Apropiacion) string {
 // @Failure 403
 // @router /InformacionAsignacionInicial/ [get]
 func (c *AprobacionController) InformacionAsignacionInicial() {
-	vigencia, err := c.GetInt("Vigencia")
-	if err == nil {
-		unidadejecutora, err := c.GetInt("UnidadEjecutora")
-		if err == nil {
-			fmt.Println(vigencia)
-			fmt.Println(unidadejecutora)
-			tool := new(ruler.EntornoReglas)
-			tool.Agregar_dominio("Presupuesto")
-			var res []string
-			var infoSaldoInicial []map[string]interface{}
-			//saldo := make(map[string]interface{})
-			if errorFill := formatdata.FillStruct(tool.Ejecutar_all_result("codigo_rubro_comprobacion_inicial(Y).", "Y"), &res); errorFill == nil {
-				for _, rpadre := range res {
-					var rubro []map[string]interface{}
-					urlmongo := "http://" + beego.AppConfig.String("financieraMongoCurdApiService") + "arbol_rubro_apropiaciones/ArbolApropiacion/" + rpadre + "/" + strconv.Itoa(unidadejecutora) + "/" + strconv.Itoa(vigencia)
-					//if err = request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/rubro?query=Codigo:"+rpadre, &rubro); err == nil {
-					if err = request.GetJson(urlmongo, &rubro); err == nil {
-						beego.Info("Rubro ", rubro[0])
-						if rubro[0]["Id"] != nil {
-							infoSaldoInicial = append(infoSaldoInicial, rubro[0])
 
-							/*if err = request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/apropiacion/SaldoApropiacionPadre/"+strconv.Itoa(rubro[0].Id)+"?Vigencia="+strconv.Itoa(vigencia)+"&UnidadEjecutora="+strconv.Itoa(unidadejecutora), &saldo); err == nil {
-								if saldo != nil {
-									//infoSaldoInicial = append(infoSaldoInicial, map[string]interface{}{"Id": rubro[0].Id, "Codigo": rpadre, "Nombre": rubro[0].Nombre, "SaldoInicial": saldo["original"]})
-								}
-							} else {
-								fmt.Println(err)
-							}*/
-						}
+	asignationInfo := map[string]float64{"2": 0.0, "3": 0.0}
 
-					} else {
-						fmt.Println(err)
-						c.Data["json"] = models.Alert{Code: "E_0458", Body: err.Error(), Type: "error"}
-					}
-
-				}
-			}
-			//c.Data["json"] = map[string]interface{}{"Aprobado": "0", "Data": infoSaldoInicial}
-			for _, apr := range infoSaldoInicial {
-				tool.Agregar_predicado("valor_inicial_rubro(" + fmt.Sprintf("%v", apr["Codigo"]) + "," + fmt.Sprintf("%v", apr["ApropiacionInicial"]) + ").")
-			}
-			if infoSaldoInicial != nil {
-				res := tool.Ejecutar_result("comprobacion_inicial_apropiacion("+fmt.Sprintf("%v", infoSaldoInicial[0]["ApropiacionInicial"])+",Y).", "Y")
-				var comp string
-				err = formatdata.FillStruct(res, &comp)
-				if err == nil {
-					c.Data["json"] = map[string]interface{}{"Aprobado": res, "Data": infoSaldoInicial}
-				} else {
-					fmt.Println("nil2")
-
-					c.Data["json"] = models.Alert{Code: "E_0458", Body: err.Error(), Type: "error"}
-				}
-			}
-
-		} else {
-			fmt.Println(err)
-			c.Data["json"] = models.Alert{Code: "E_0458", Body: err.Error(), Type: "error"}
+	defer func() {
+		if r := recover(); r != nil {
+			beego.Error(r)
+			resposeformat.SetResponseFormat(&c.Controller, r, "E_0459", 500)
 		}
-	} else {
-		fmt.Println(err)
-		c.Data["json"] = models.Alert{Code: "E_0458", Body: err.Error(), Type: "error"}
+	}()
+	vigencia, err := c.GetInt("Vigencia")
+	if err != nil {
+		panic(helpers.InternalErrorMessage())
 	}
-	c.ServeJSON()
+	unidadejecutora, err := c.GetInt("UnidadEjecutora")
+	if err != nil {
+		panic(helpers.InternalErrorMessage())
+	}
+
+	compareFlag := apropiacionHelper.CompareApropiationNodes(&asignationInfo, unidadejecutora, vigencia)
+
+	beego.Debug(compareFlag, asignationInfo)
+	response := make(map[string]interface{})
+	response["InfoApropiacion"] = asignationInfo
+	response["Aprobado"] = compareFlag
+
+	resposeformat.SetResponseFormat(&c.Controller, response, "", 200)
 }
 
 // AprobacionAsignacionInicial ...

@@ -33,6 +33,7 @@ func (c *RubroController) RegistrarRubro() {
 			resposeformat.SetResponseFormat(&c.Controller, r, "E_0458", 500)
 		}
 	}()
+
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
 		response := rubroHelper.AddRubro(v)
 		beego.Debug(response)
@@ -40,6 +41,7 @@ func (c *RubroController) RegistrarRubro() {
 	} else {
 		resposeformat.SetResponseFormat(&c.Controller, nil, "E_0458", 500)
 	}
+
 }
 
 // EliminarRubro ...

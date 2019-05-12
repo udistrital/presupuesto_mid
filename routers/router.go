@@ -24,6 +24,11 @@ func init() {
 				&controllers.ApropiacionController{},
 			),
 		),
+		beego.NSNamespace("/aprobacion_apropiacion",
+			beego.NSInclude(
+				&controllers.AprobacionController{},
+			),
+		),
 	)
 	beego.AddNamespace(ns)
 }

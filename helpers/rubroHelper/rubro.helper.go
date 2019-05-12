@@ -19,6 +19,7 @@ func AddRubro(data models.RubroRubro) (response map[string]interface{}) {
 	res := make(map[string]interface{})
 
 	defer func() {
+
 		if r := recover(); r != nil {
 			go func() {
 				if resul, e := res["Body"].(map[string]interface{}); e {

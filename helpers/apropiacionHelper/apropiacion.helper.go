@@ -108,6 +108,13 @@ func PutApropiacion(data map[string]interface{}, idStr, valStr, vigStr string) m
 
 		}
 	}()
+	vig, _ := strconv.Atoi(vigStr)
+	aprobFlag := PresupuestoAprobado(vig, int(data["UnidadEjecutora"].(float64)))
+
+	if aprobFlag {
+		beego.Error("Apropiaciones aprobadas")
+		panic(helpers.ExternalAPIErrorMessage())
+	}
 
 	mongoData = data
 
@@ -201,5 +208,38 @@ func CompareApropiationNodes(nodesToCompare *map[string]float64, ue, vigencia in
 	}
 
 	return true
+
+}
+
+func AprobarPresupuesto(vigencia, unidadejecutora int) (res map[string]interface{}) {
+	asignationInfo := map[string]float64{"2": 0.0, "3": 0.0}
+
+	compareFlag := CompareApropiationNodes(&asignationInfo, unidadejecutora, vigencia)
+	aprobFlag := PresupuestoAprobado(vigencia, unidadejecutora)
+	if compareFlag && !aprobFlag {
+		if err := request.GetJson(beego.AppConfig.String("presupuestoApiService")+"apropiacion/AprobacionAsignacionInicial"+"?Vigencia="+strconv.Itoa(vigencia)+"&UnidadEjecutora="+strconv.Itoa(unidadejecutora), &res); err == nil {
+			if res["Type"] != nil && res["Type"].(string) == "success" {
+				return
+			} else {
+				panic(helpers.ExternalAPIErrorMessage())
+			}
+		}
+	}
+
+	panic(helpers.InternalErrorMessage())
+}
+
+func PresupuestoAprobado(vigencia, unidadejecutora int) bool {
+	var res []interface{}
+	if err := request.GetJson(beego.AppConfig.String("presupuestoApiService")+"apropiacion?"+"query=Vigencia:"+strconv.Itoa(vigencia)+",Rubro.UnidadEjecutora:"+strconv.Itoa(unidadejecutora)+",Estado:2", &res); err == nil {
+		if len(res) > 0 {
+			return true
+		} else {
+			return false
+		}
+	} else {
+		beego.Error(err.Error())
+		panic(helpers.InternalErrorMessage())
+	}
 
 }

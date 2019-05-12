@@ -39,6 +39,7 @@ func (c *ApropiacionController) Post() {
 	}()
 
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
+		v.Estado.Id = 1
 		response := apropiacionHelper.AddApropiacion(v)
 		resposeformat.SetResponseFormat(&c.Controller, response["Body"], response["Code"].(string), 200)
 	} else {

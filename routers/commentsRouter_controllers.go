@@ -18,8 +18,8 @@ func init() {
 
     beego.GlobalControllerRouter["github.com/udistrital/presupuesto_mid/controllers:AprobacionController"] = append(beego.GlobalControllerRouter["github.com/udistrital/presupuesto_mid/controllers:AprobacionController"],
         beego.ControllerComments{
-            Method: "InformacionAsignacionInicial",
-            Router: `/InformacionAsignacionInicial/`,
+            Method: "Aprobado",
+            Router: `/Aprobado`,
             AllowHTTPMethods: []string{"get"},
             MethodParams: param.Make(),
             Filters: nil,
@@ -27,9 +27,9 @@ func init() {
 
     beego.GlobalControllerRouter["github.com/udistrital/presupuesto_mid/controllers:AprobacionController"] = append(beego.GlobalControllerRouter["github.com/udistrital/presupuesto_mid/controllers:AprobacionController"],
         beego.ControllerComments{
-            Method: "Aprobar",
-            Router: `Aprobar/`,
-            AllowHTTPMethods: []string{"post"},
+            Method: "InformacionAsignacionInicial",
+            Router: `/InformacionAsignacionInicial/`,
+            AllowHTTPMethods: []string{"get"},
             MethodParams: param.Make(),
             Filters: nil,
             Params: nil})

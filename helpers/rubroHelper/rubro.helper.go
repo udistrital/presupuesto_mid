@@ -22,6 +22,11 @@ func AddRubro(data models.RubroRubro) (response map[string]interface{}) {
 
 		if r := recover(); r != nil {
 			go func() {
+				defer func() {
+					if routineRecv := recover(); routineRecv != nil {
+						beego.Error(helpers.RoutineError())
+					}
+				}()
 				if resul, e := res["Body"].(map[string]interface{}); e {
 					urlCrud = beego.AppConfig.String("presupuestoApiService")
 

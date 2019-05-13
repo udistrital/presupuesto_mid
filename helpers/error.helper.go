@@ -14,3 +14,8 @@ func ExternalAPIErrorMessage() string {
 func APINotFoundErrorMessage() string {
 	return "Exteral API Not Found"
 }
+
+// RoutineError ... return routine error message format.
+func RoutineError() string {
+	return "Routine error ocurr"
+}

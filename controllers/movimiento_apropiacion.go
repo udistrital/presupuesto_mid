@@ -2,16 +2,15 @@ package controllers
 
 import (
 	"encoding/json"
-	"math"
 	"strconv"
-	"strings"
 
 	"github.com/astaxie/beego"
 	"github.com/manucorporat/try"
-	"github.com/udistrital/presupuesto_mid/helpers/apropiacionHelper"
+	"github.com/udistrital/presupuesto_mid/helpers/movimientoApropiacionHelper"
 	"github.com/udistrital/presupuesto_mid/models"
 	"github.com/udistrital/utils_oas/formatdata"
 	"github.com/udistrital/utils_oas/request"
+	"github.com/udistrital/utils_oas/resposeformat"
 )
 
 // MovimientoApropiacionController operations for MovimientoApropiacion
@@ -59,7 +58,7 @@ func (c *MovimientoApropiacionController) AprobarMovimietnoApropiacion() {
 					afectacion[index]["CuentaContraCredito"].(map[string]interface{})["UnidadEjecutora"] = strconv.Itoa(int(afectacion[index]["CuentaContraCredito"].(map[string]interface{})["Rubro"].(map[string]interface{})["UnidadEjecutora"].(float64)))
 				}
 			}
-			_, _, compr := ComprobacionMovimiento(afectacion, UE, vigencia)
+			_, _, compr := movimientoApropiacionHelper.ComprobacionMovimiento(afectacion, UE, vigencia)
 			if compr {
 				Urlcrud := "http://" + beego.AppConfig.String("Urlcrud") + ":" + beego.AppConfig.String("Portcrud") + "/" + beego.AppConfig.String("Nscrud") + "/movimiento_apropiacion/AprobarMovimietnoApropiacion"
 				if err := request.SendJson(Urlcrud, "POST", &res, &v); err == nil {
@@ -103,104 +102,45 @@ func (c *MovimientoApropiacionController) AprobarMovimietnoApropiacion() {
 // @Failure 403
 // @router /ComprobarMovimientoApropiacion/:unidadEjecutora/:vigencia [post]
 func (c *MovimientoApropiacionController) ComprobarMovimientoApropiacion() {
-	try.This(func() {
-		var v map[string]interface{}
-		var afectacion []map[string]interface{}
-		dataSend := make(map[string]interface{})
-		UEStr := c.Ctx.Input.Param(":unidadEjecutora")
-		UE, comp := strconv.Atoi(UEStr)
-		if comp != nil {
-			panic(comp.Error())
+	defer func() {
+		if r := recover(); r != nil {
+			beego.Error(r)
+			resposeformat.SetResponseFormat(&c.Controller, nil, "E_0458", 500)
 		}
-		format, _ := c.GetInt("format")
+	}()
 
-		VigStr := c.Ctx.Input.Param(":vigencia")
-		vigencia, comp := strconv.Atoi(VigStr)
-		if comp != nil {
-			panic(comp.Error())
-		}
-		if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
-			formatdata.FillStructP(v["MovimientoApropiacionDisponibilidadApropiacion"], &afectacion)
-			if format == 1 {
-				for index := 0; index < len(afectacion); index++ {
-					afectacion[index]["CuentaCredito"].(map[string]interface{})["Codigo"] = afectacion[index]["CuentaCredito"].(map[string]interface{})["Rubro"].(map[string]interface{})["Codigo"]
-					afectacion[index]["CuentaCredito"].(map[string]interface{})["UnidadEjecutora"] = strconv.Itoa(int(afectacion[index]["CuentaCredito"].(map[string]interface{})["Rubro"].(map[string]interface{})["UnidadEjecutora"].(float64)))
-					if afectacion[index]["CuentaContraCredito"] != nil {
-						afectacion[index]["CuentaContraCredito"].(map[string]interface{})["Codigo"] = afectacion[index]["CuentaContraCredito"].(map[string]interface{})["Rubro"].(map[string]interface{})["Codigo"]
-						afectacion[index]["CuentaContraCredito"].(map[string]interface{})["UnidadEjecutora"] = strconv.Itoa(int(afectacion[index]["CuentaContraCredito"].(map[string]interface{})["Rubro"].(map[string]interface{})["UnidadEjecutora"].(float64)))
-					}
+	var v map[string]interface{}
+	var afectacion []map[string]interface{}
+	dataSend := make(map[string]interface{})
+	UEStr := c.Ctx.Input.Param(":unidadEjecutora")
+	UE, comp := strconv.Atoi(UEStr)
+	if comp != nil {
+		panic(comp.Error())
+	}
+	format, _ := c.GetInt("format")
+
+	VigStr := c.Ctx.Input.Param(":vigencia")
+	vigencia, comp := strconv.Atoi(VigStr)
+	if comp != nil {
+		panic(comp.Error())
+	}
+	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
+		formatdata.FillStructP(v["MovimientoApropiacionDisponibilidadApropiacion"], &afectacion)
+		if format == 1 {
+			for index := 0; index < len(afectacion); index++ {
+				afectacion[index]["CuentaCredito"].(map[string]interface{})["Codigo"] = afectacion[index]["CuentaCredito"].(map[string]interface{})["Rubro"].(map[string]interface{})["Codigo"]
+				afectacion[index]["CuentaCredito"].(map[string]interface{})["UnidadEjecutora"] = strconv.Itoa(int(afectacion[index]["CuentaCredito"].(map[string]interface{})["Rubro"].(map[string]interface{})["UnidadEjecutora"].(float64)))
+				if afectacion[index]["CuentaContraCredito"] != nil {
+					afectacion[index]["CuentaContraCredito"].(map[string]interface{})["Codigo"] = afectacion[index]["CuentaContraCredito"].(map[string]interface{})["Rubro"].(map[string]interface{})["Codigo"]
+					afectacion[index]["CuentaContraCredito"].(map[string]interface{})["UnidadEjecutora"] = strconv.Itoa(int(afectacion[index]["CuentaContraCredito"].(map[string]interface{})["Rubro"].(map[string]interface{})["UnidadEjecutora"].(float64)))
 				}
 			}
-			dataSend["Saldo"], dataSend["Diff"], dataSend["Comp"] = ComprobacionMovimiento(afectacion, UE, vigencia)
-			alt := models.Alert{}
-			alt.Code = "S_CMA001"
-			alt.Body = dataSend
-			alt.Type = "success"
-			c.Data["json"] = alt
-		} else {
-			panic(err.Error())
 		}
-	}).Catch(func(e try.E) {
-		beego.Error("catch error Comprobar Movimientos: ", e)
-		alt := models.Alert{}
-		alt.Code = "E_0458"
-		alt.Body = e
-		alt.Type = "error"
-		c.Data["json"] = alt
-	})
-	c.ServeJSON()
-}
-
-// CalcularAfectacionMovimientoApropiacion ... Calcula la afectacion de un movimiento en el arbol
-// Antes de realizar la operacion de registro en la db.
-func CalcularAfectacionMovimientoApropiacion(afectacion map[string]interface{}, res map[string]float64) {
-
-	var tipo map[string]interface{}
-	var idTipo int
-	var cuentaCredito map[string]interface{}
-	var cuentaContraCredito map[string]interface{}
-	var multiplicador float64
-	formatdata.FillStructP(afectacion["TipoMovimientoApropiacion"], &tipo)
-	formatdata.FillStructP(tipo["Id"], &idTipo)
-
-	formatdata.FillStructP(afectacion["CuentaCredito"], &cuentaCredito)
-	formatdata.FillStructP(afectacion["CuentaContraCredito"], &cuentaContraCredito)
-	UnidadEjecutora, err := strconv.Atoi(cuentaCredito["UnidadEjecutora"].(string))
-
-	if err != nil {
+		dataSend["Saldo"], dataSend["Diff"], dataSend["Comp"] = movimientoApropiacionHelper.ComprobacionMovimiento(afectacion, UE, vigencia)
+		resposeformat.SetResponseFormat(&c.Controller, dataSend, "S_CMA001", 200)
+	} else {
 		panic(err.Error())
 	}
-
-	switch cond := idTipo; cond {
-	case 3: // Adicion
-		multiplicador = 1
-	case 4:
-		multiplicador = 0
-	default:
-		multiplicador = -1
-	}
-
-	sumValorMovimientoAPropiacion(false, cuentaCredito["Codigo"].(string), UnidadEjecutora, 2018, afectacion["Valor"].(float64)*multiplicador, res)
-	if cuentaContraCredito != nil {
-		sumValorMovimientoAPropiacion(false, cuentaContraCredito["Codigo"].(string), UnidadEjecutora, 2018, afectacion["Valor"].(float64), res)
-	}
-
-}
-
-func sumValorMovimientoAPropiacion(final bool, codigoRubro string, unidadEjecutora, vigencia int, valorMov float64, res map[string]float64) {
-	var valorFinal float64
-	var saldoObj map[string]float64
-	var valorInicial float64
-	codigoPadre := strings.Split(codigoRubro, separator)
-	if final {
-		saldoObj = apropiacionHelper.CalcularSaldoApropiacion(codigoPadre[0], unidadEjecutora, vigencia)
-		valorInicial = saldoObj["valor_inicial"]
-	} else {
-		valorInicial = 0
-	}
-	valorFinal = valorInicial + valorMov
-	res[codigoPadre[0]] = res[codigoPadre[0]] + valorFinal
-	return
 }
 
 // Mongo function's
@@ -299,18 +239,4 @@ func AddMovimientoApropiacionMongo(parameter ...interface{}) (err interface{}) {
 
 	})
 	return
-}
-
-func ComprobacionMovimiento(afectacion []map[string]interface{}, UE, vigencia int) (map[string]float64, float64, bool) {
-	res := make(map[string]float64)
-	for _, element := range afectacion {
-		CalcularAfectacionMovimientoApropiacion(element, res)
-	}
-	sumValorMovimientoAPropiacion(true, "3", UE, vigencia, 0, res)
-	sumValorMovimientoAPropiacion(true, "2", UE, vigencia, 0, res)
-	diff := math.Abs(res["2"] - res["3"])
-	if res["2"] != res["3"] {
-		return res, diff, false
-	}
-	return res, diff, true
 }

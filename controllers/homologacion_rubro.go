@@ -125,6 +125,7 @@ func (c *HomologacionRubroController) GetAll() {
 	var limit int64 = 10
 	var offset int64
 	var query string
+	var urlCrud string
 	// limit: 10 (default is 10)
 	if v, err := c.GetInt64("limit"); err == nil {
 		limit = v
@@ -136,8 +137,8 @@ func (c *HomologacionRubroController) GetAll() {
 	if r := c.GetString("query"); r != "" {
 		query = r
 	}
-
-	if err := request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/rubro_homologado?limit="+strconv.FormatInt(limit, 10)+"&offset="+strconv.FormatInt(offset, 10)+"&query="+query, &rubrosHomol); err == nil {
+	urlCrud = beego.AppConfig.String("presupuestoApiService") + "/rubro_homologado"
+	if err := request.GetJson(urlCrud+"?limit="+strconv.FormatInt(limit, 10)+"&offset="+strconv.FormatInt(offset, 10)+"&query="+query, &rubrosHomol); err == nil {
 		if rubrosHomol != nil {
 			done := make(chan interface{})
 			defer close(done)

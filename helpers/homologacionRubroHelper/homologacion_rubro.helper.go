@@ -9,9 +9,7 @@ import (
 // CreateRubroHomologado ... send finantial information to presupuestoApiService for some internal operation's
 func CreateRubroHomologado(rubro interface{}) (response map[string]interface{}) {
 
-	var (
-		urlCrud String
-	)
+	var urlCrud string
 	res := make(map[string]interface{})
 	// rubroHomologado := make(map[string]interface{})
 	urlCrud = beego.AppConfig.String("presupuestoApiService") + "/rubro_homologado"

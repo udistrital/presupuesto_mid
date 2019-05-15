@@ -34,6 +34,11 @@ func init() {
 				&controllers.MovimientoApropiacionController{},
 			),
 		),
+		beego.NSNamespace("/rubro_homologado",
+			beego.NSInclude(
+				&controllers.HomologacionRubroController{},
+			),
+		),		
 	)
 	beego.AddNamespace(ns)
 }

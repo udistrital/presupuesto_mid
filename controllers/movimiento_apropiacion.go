@@ -34,9 +34,22 @@ const separator = "-"
 // @router /AprobarMovimietnoApropiacion/:unidadEjecutora/:vigencia [post]
 func (c *MovimientoApropiacionController) AprobarMovimietnoApropiacion() {
 	var v map[string]interface{}
-	try.This(func() {
+	var res interface{}
 
-		var res interface{}
+	defer func() {
+		if r := recover(); r != nil {
+			var alert []models.Alert
+			alt := models.Alert{}
+			alt.Code = "E_0458"
+			alt.Body = v
+			alt.Type = "error"
+			alert = append(alert, alt)
+			resposeformat.SetResponseFormat(&c.Controller, alert, "E_0458", 500)
+		}
+
+	}()
+
+	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
 		var afectacion []map[string]interface{}
 		UEStr := c.Ctx.Input.Param(":unidadEjecutora")
 		UE, comp := strconv.Atoi(UEStr)
@@ -48,49 +61,13 @@ func (c *MovimientoApropiacionController) AprobarMovimietnoApropiacion() {
 		if comp != nil {
 			panic(comp.Error())
 		}
-		if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
-			formatdata.FillStructP(v["MovimientoApropiacionDisponibilidadApropiacion"], &afectacion)
-			for index := 0; index < len(afectacion); index++ {
-				afectacion[index]["CuentaCredito"].(map[string]interface{})["Codigo"] = afectacion[index]["CuentaCredito"].(map[string]interface{})["Rubro"].(map[string]interface{})["Codigo"]
-				afectacion[index]["CuentaCredito"].(map[string]interface{})["UnidadEjecutora"] = strconv.Itoa(int(afectacion[index]["CuentaCredito"].(map[string]interface{})["Rubro"].(map[string]interface{})["UnidadEjecutora"].(float64)))
-				if afectacion[index]["CuentaContraCredito"] != nil {
-					afectacion[index]["CuentaContraCredito"].(map[string]interface{})["Codigo"] = afectacion[index]["CuentaContraCredito"].(map[string]interface{})["Rubro"].(map[string]interface{})["Codigo"]
-					afectacion[index]["CuentaContraCredito"].(map[string]interface{})["UnidadEjecutora"] = strconv.Itoa(int(afectacion[index]["CuentaContraCredito"].(map[string]interface{})["Rubro"].(map[string]interface{})["UnidadEjecutora"].(float64)))
-				}
-			}
-			_, _, compr := movimientoApropiacionHelper.ComprobacionMovimiento(afectacion, UE, vigencia)
-			if compr {
-				Urlcrud := "http://" + beego.AppConfig.String("Urlcrud") + ":" + beego.AppConfig.String("Portcrud") + "/" + beego.AppConfig.String("Nscrud") + "/movimiento_apropiacion/AprobarMovimietnoApropiacion"
-				if err := request.SendJson(Urlcrud, "POST", &res, &v); err == nil {
-					//beego.Info("Data to Send ", res)
-					c.Data["json"] = res
-				} else {
-					panic(err.Error())
-				}
-			} else {
-				var alert []models.Alert
-				alt := models.Alert{}
-				alt.Code = "E_MODP008"
-				alt.Body = map[string]interface{}{"Movimiento": v}
-				alt.Type = "error"
-				alert = append(alert, alt)
-				c.Data["json"] = alert
-			}
+		formatdata.FillStructP(v["MovimientoApropiacionDisponibilidadApropiacion"], &afectacion)
+		res = movimientoApropiacionHelper.Aprobar(v, afectacion, UE, vigencia)
+		resposeformat.SetResponseFormat(&c.Controller, res, "", 200)
+	} else {
+		panic(err.Error())
+	}
 
-		} else {
-			panic(err.Error())
-		}
-	}).Catch(func(e try.E) {
-		beego.Error("catch error registrar valores: ", e)
-		var alert []models.Alert
-		alt := models.Alert{}
-		alt.Code = "E_0458"
-		alt.Body = v
-		alt.Type = "error"
-		alert = append(alert, alt)
-		c.Data["json"] = alert
-	})
-	c.ServeJSON()
 }
 
 // ComprobarMovimientoApropiacion ...

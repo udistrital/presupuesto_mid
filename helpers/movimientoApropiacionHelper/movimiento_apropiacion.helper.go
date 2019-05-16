@@ -5,8 +5,13 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/udistrital/presupuesto_mid/helpers"
+
+	"github.com/astaxie/beego"
+
 	"github.com/udistrital/presupuesto_mid/helpers/apropiacionHelper"
 	"github.com/udistrital/utils_oas/formatdata"
+	"github.com/udistrital/utils_oas/request"
 )
 
 const separator = "-"
@@ -108,4 +113,27 @@ func calcularAfectacionMovimientoApropiacion(afectacion map[string]interface{}, 
 		sumValorMovimientoAPropiacion(false, cuentaContraCredito["Codigo"].(string), UnidadEjecutora, vigencia, afectacion["Valor"].(float64), res)
 	}
 
+}
+
+func Aprobar(dataMov map[string]interface{}, afectacion []map[string]interface{}, unidadEjecutora, vigencia int) (res interface{}) {
+	for index := 0; index < len(afectacion); index++ {
+		afectacion[index]["CuentaCredito"].(map[string]interface{})["Codigo"] = afectacion[index]["CuentaCredito"].(map[string]interface{})["Rubro"].(map[string]interface{})["Codigo"]
+		afectacion[index]["CuentaCredito"].(map[string]interface{})["UnidadEjecutora"] = strconv.Itoa(int(afectacion[index]["CuentaCredito"].(map[string]interface{})["Rubro"].(map[string]interface{})["UnidadEjecutora"].(float64)))
+		if afectacion[index]["CuentaContraCredito"] != nil {
+			afectacion[index]["CuentaContraCredito"].(map[string]interface{})["Codigo"] = afectacion[index]["CuentaContraCredito"].(map[string]interface{})["Rubro"].(map[string]interface{})["Codigo"]
+			afectacion[index]["CuentaContraCredito"].(map[string]interface{})["UnidadEjecutora"] = strconv.Itoa(int(afectacion[index]["CuentaContraCredito"].(map[string]interface{})["Rubro"].(map[string]interface{})["UnidadEjecutora"].(float64)))
+		}
+	}
+	_, _, compr := ComprobacionMovimiento(afectacion, unidadEjecutora, vigencia)
+	if compr {
+		Urlcrud := beego.AppConfig.String("presupuestoApiService") + "/movimiento_apropiacion/AprobarMovimietnoApropiacion"
+		if err := request.SendJson(Urlcrud, "POST", &res, &dataMov); err == nil {
+			return
+		} else {
+			beego.Error(err.Error())
+			panic(err.Error())
+		}
+	} else {
+		panic(helpers.InternalErrorMessage())
+	}
 }

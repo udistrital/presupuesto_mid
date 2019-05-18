@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	"github.com/astaxie/beego"
-	"github.com/manucorporat/try"
 	"github.com/udistrital/presupuesto_mid/helpers/movimientoApropiacionHelper"
 	"github.com/udistrital/presupuesto_mid/models"
 	"github.com/udistrital/utils_oas/formatdata"
@@ -126,94 +125,94 @@ func AddMovimientoApropiacionMongo(parameter ...interface{}) (err interface{}) {
 	idMov := 0.0
 	var movimientos []map[string]interface{}
 	var resM map[string]interface{}
-	try.This(func() {
-		dataMongo := make(map[string]interface{})
-		infoMovimiento := parameter[0].(map[string]interface{})["Movimiento"].(map[string]interface{})
-		idMov = infoMovimiento["Id"].(float64)
-		var afectacionArr []map[string]interface{}
+	infoMovimiento := parameter[0].(map[string]interface{})["Movimiento"].(map[string]interface{})
+	dataMongo := make(map[string]interface{})
 
-		dataMongo["FechaMovimiento"] = infoMovimiento["FechaMovimiento"]
-		dataMongo["Vigencia"] = infoMovimiento["Vigencia"]
-		dataMongo["UnidadEjecutora"] = infoMovimiento["UnidadEjecutora"]
-		dataMongo["Id"] = infoMovimiento["Id"]
-		err1 := formatdata.FillStruct(infoMovimiento["MovimientoApropiacionDisponibilidadApropiacion"], &movimientos)
-		if err1 != nil {
-			panic(err1.Error())
-		}
-		for _, data := range movimientos {
-			var CuentaContraCredito string
-			var CuentaCredito string
-			var Disponibilidad float64
-			var Apropiacion float64
-			if CuentaContraCreditoInt, e := data["CuentaContraCredito"].(map[string]interface{}); e {
-				CuentaContraCredito = CuentaContraCreditoInt["Rubro"].(map[string]interface{})["Codigo"].(string)
-			}
-			if CuentaCreditoInt, e := data["CuentaCredito"].(map[string]interface{}); e {
-				CuentaCredito = CuentaCreditoInt["Rubro"].(map[string]interface{})["Codigo"].(string)
-				Apropiacion = CuentaCreditoInt["Id"].(float64)
-			}
-			if dispo, e := data["Disponibilidad"].(map[string]interface{}); e {
-				Disponibilidad = dispo["Id"].(float64)
-				var disponibilidadParameter []interface{}
-				disponibilidadParameter = append(disponibilidadParameter, dispo)
-				beego.Info("Jon Info ", disponibilidadParameter)
-				if err := AddDisponibilidadMongo(disponibilidadParameter...); err != nil {
-					panic("Mongo api error")
-				}
-			}
+	defer func() {
+		if r := recover(); r != nil {
+			var resC interface{}
+			Urlcrud := beego.AppConfig.String("presupuestoApiService") + "movimiento_apropiacion/" + strconv.Itoa(int(idMov))
+			estadoMov := infoMovimiento["EstadoMovimientoApropiacion"].(map[string]interface{})
+			estadoMov["Id"] = 1
+			infoMovimiento["EstadoMovimientoApropiacion"] = estadoMov
 
-			Valor := data["Valor"]
-			beego.Info("data send ", data)
+			if errorPut := request.SendJson(Urlcrud, "PUT", &resC, &infoMovimiento); errorPut == nil {
+				for _, data := range movimientos {
+					if dispo, e := data["Disponibilidad"].(map[string]interface{}); e {
+						idDisp := dispo["Id"].(float64)
+						Urlcrud := beego.AppConfig.String("presupuestoApiService") + "disponibilidad/DeleteDisponibilidadMovimiento/" + strconv.Itoa(int(idDisp))
+						if errorDelete := request.SendJson(Urlcrud, "DELETE", &resC, nil); errorDelete == nil {
+							beego.Info(resC)
+						} else {
+							beego.Error(errorDelete)
+						}
 
-			TipoMovimiento := data["TipoMovimientoApropiacion"].(map[string]interface{})["Nombre"]
-			afectacion := map[string]interface{}{
-				"CuentaContraCredito": CuentaContraCredito,
-				"CuentaCredito":       CuentaCredito,
-				"Valor":               Valor,
-				"TipoMovimiento":      TipoMovimiento,
-				"Disponibilidad":      Disponibilidad,
-				"Apropiacion":         Apropiacion,
-			}
-			afectacionArr = append(afectacionArr, afectacion)
-		}
-		dataMongo["Afectacion"] = afectacionArr
-		Urlmongo := "http://" + beego.AppConfig.String("financieraMongoCurdApiService") + "/arbol_rubro_apropiaciones/RegistrarMovimiento/ModificacionApr"
-		if err1 := request.SendJson(Urlmongo, "POST", &resM, &dataMongo); err1 == nil {
-			if resM["Type"].(string) == "success" {
-				err = err1
-			} else {
-				panic("Mongo api error")
-			}
-		} else {
-			panic("Mongo Not Found")
-		}
-	}).Catch(func(e try.E) {
-		var resC interface{}
-		infoMovimiento := parameter[0].(map[string]interface{})["Movimiento"].(map[string]interface{})
-		Urlcrud := "http://" + beego.AppConfig.String("Urlcrud") + ":" + beego.AppConfig.String("Portcrud") + "/" + beego.AppConfig.String("Nscrud") + "/movimiento_apropiacion/" + strconv.Itoa(int(idMov))
-		estadoMov := infoMovimiento["EstadoMovimientoApropiacion"].(map[string]interface{})
-		estadoMov["Id"] = 1
-		infoMovimiento["EstadoMovimientoApropiacion"] = estadoMov
-
-		if errorPut := request.SendJson(Urlcrud, "PUT", &resC, &infoMovimiento); errorPut == nil {
-			for _, data := range movimientos {
-				if dispo, e := data["Disponibilidad"].(map[string]interface{}); e {
-					idDisp := dispo["Id"].(float64)
-					Urlcrud := "http://" + beego.AppConfig.String("Urlcrud") + ":" + beego.AppConfig.String("Portcrud") + "/" + beego.AppConfig.String("Nscrud") + "/disponibilidad/DeleteDisponibilidadMovimiento/" + strconv.Itoa(int(idDisp))
-					if errorDelete := request.SendJson(Urlcrud, "DELETE", &resC, nil); errorDelete == nil {
-						beego.Info(resC)
-					} else {
-						beego.Info(errorDelete)
 					}
 
 				}
-
+				beego.Error("error job ", r)
+			} else {
+				beego.Error("error en put ", errorPut)
 			}
-			beego.Error("error job ", e)
-		} else {
-			beego.Error("error en put ", errorPut)
+		}
+	}()
+
+	idMov = infoMovimiento["Id"].(float64)
+	var afectacionArr []map[string]interface{}
+
+	dataMongo["FechaMovimiento"] = infoMovimiento["FechaMovimiento"]
+	dataMongo["Vigencia"] = infoMovimiento["Vigencia"]
+	dataMongo["UnidadEjecutora"] = infoMovimiento["UnidadEjecutora"]
+	dataMongo["Id"] = infoMovimiento["Id"]
+	err1 := formatdata.FillStruct(infoMovimiento["MovimientoApropiacionDisponibilidadApropiacion"], &movimientos)
+	if err1 != nil {
+		panic(err1.Error())
+	}
+	for _, data := range movimientos {
+		var CuentaContraCredito string
+		var CuentaCredito string
+		var Disponibilidad float64
+		var Apropiacion float64
+		if CuentaContraCreditoInt, e := data["CuentaContraCredito"].(map[string]interface{}); e {
+			CuentaContraCredito = CuentaContraCreditoInt["Rubro"].(map[string]interface{})["Codigo"].(string)
+		}
+		if CuentaCreditoInt, e := data["CuentaCredito"].(map[string]interface{}); e {
+			CuentaCredito = CuentaCreditoInt["Rubro"].(map[string]interface{})["Codigo"].(string)
+			Apropiacion = CuentaCreditoInt["Id"].(float64)
+		}
+		if dispo, e := data["Disponibilidad"].(map[string]interface{}); e {
+			Disponibilidad = dispo["Id"].(float64)
+			var disponibilidadParameter []interface{}
+			disponibilidadParameter = append(disponibilidadParameter, dispo)
+			if err := AddDisponibilidadMongo(disponibilidadParameter...); err != nil {
+				panic("Mongo api error")
+			}
 		}
 
-	})
+		Valor := data["Valor"]
+
+		TipoMovimiento := data["TipoMovimientoApropiacion"].(map[string]interface{})["Nombre"]
+		afectacion := map[string]interface{}{
+			"CuentaContraCredito": CuentaContraCredito,
+			"CuentaCredito":       CuentaCredito,
+			"Valor":               Valor,
+			"TipoMovimiento":      TipoMovimiento,
+			"Disponibilidad":      Disponibilidad,
+			"Apropiacion":         Apropiacion,
+		}
+		afectacionArr = append(afectacionArr, afectacion)
+	}
+	dataMongo["Afectacion"] = afectacionArr
+	Urlmongo := beego.AppConfig.String("financieraMongoCurdApiService") + "arbol_rubro_apropiaciones/RegistrarMovimiento/ModificacionApr"
+	if err1 := request.SendJson(Urlmongo, "POST", &resM, &dataMongo); err1 == nil {
+		if resM["Type"].(string) == "success" {
+			err = err1
+		} else {
+			panic("Mongo api error")
+		}
+	} else {
+		panic("Mongo Not Found")
+	}
+
 	return
 }

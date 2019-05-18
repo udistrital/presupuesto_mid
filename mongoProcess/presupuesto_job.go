@@ -112,28 +112,35 @@ func sendOpInfoToMongo(ctx *context.Context) {
 }
 
 func sendMovimientoInfoToMongo(ctx *context.Context) {
-	try.This(func() {
-		var serviceResponse []models.Alert
-		err := formatdata.FillStruct(ctx.Input.Data()["json"], &serviceResponse)
-		if err != nil {
-			panic(err.Error())
-		}
-		var params []interface{}
-		data := serviceResponse[len(serviceResponse)-1]
-		// for _, data := range serviceResponse {
-		if data.Type == "success" {
-			info := data.Body
-			params = append(params, info)
-			work := optimize.WorkRequest{JobParameter: params, Job: (controllers.AddMovimientoApropiacionMongo)}
-			// Push the work onto the queue.
-			optimize.WorkQueue <- work
-			beego.Info("Job Queued!")
-		}
 
-		// }
-	}).Catch(func(e try.E) {
-		beego.Info("Exepc ", e)
-	})
+	var response map[string]interface{}
+	var serviceResponse []models.Alert
+
+	defer func() {
+		if r := recover(); r != nil {
+			beego.Error(r)
+		}
+	}()
+
+	err := formatdata.FillStruct(ctx.Input.Data()["json"], &response)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	err = formatdata.FillStruct(response["Body"], &serviceResponse)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	var params []interface{}
+	data := serviceResponse[len(serviceResponse)-1]
+	if data.Type == "success" {
+		info := data.Body
+		params = append(params, info)
+		work := optimize.WorkRequest{JobParameter: params, Job: (controllers.AddMovimientoApropiacionMongo)}
+		optimize.WorkQueue <- work
+		beego.Info("Job Queued!")
+	}
 }
 func sendFuenteFinanciamientoInfoToMongo(ctx *context.Context) {
 	try.This(func() {

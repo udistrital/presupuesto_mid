@@ -156,8 +156,9 @@ func CalcularSaldoApropiacion(rubroParam string, unidadEParam, vigenciaParam int
 
 			if !strings.Contains(key, "mes") && !strings.Contains(key, "rp") {
 				switch tipoMovimiento := key; tipoMovimiento {
+				case "Suspensión", "mes_cdp", "Reducción":
 				//rp
-				case "Adicion", "Traslado_cuenta_contra_credito", "total_anulado_cdp", "valor_inicial":
+				case "Adición", "Traslado_cuenta_contra_credito", "total_anulado_cdp", "valor_inicial":
 					saldo += value
 				default:
 					saldo -= value
@@ -166,7 +167,8 @@ func CalcularSaldoApropiacion(rubroParam string, unidadEParam, vigenciaParam int
 		}
 
 	}
-
+	res["Adicion"] = res["Adición"]
+	res["Reduccion"] = res["Reducción"]
 	res["saldo"] = saldo
 	return
 }

@@ -1117,7 +1117,7 @@ func AddDisponibilidadMongo(parameter ...interface{}) (err interface{}) {
 		infoDisp["Vigencia"] = strconv.Itoa(int(infoDisp["Vigencia"].(float64)))
 		var afectacion []map[string]interface{}
 		idDisp := int(infoDisp["Id"].(float64))
-		Urlcrud := "http://" + beego.AppConfig.String("Urlcrud") + ":" + beego.AppConfig.String("Portcrud") + "/" + beego.AppConfig.String("Nscrud") + "/disponibilidad/GetPrincDisponibilidadInfo/" + strconv.Itoa(idDisp)
+		Urlcrud := beego.AppConfig.String("presupuestoApiService") + "disponibilidad/GetPrincDisponibilidadInfo/" + strconv.Itoa(idDisp)
 		if err1 := request.GetJson(Urlcrud, &afectacion); err1 == nil {
 			infoDisp["Afectacion"] = afectacion
 			dateStr := infoDisp["FechaRegistro"].(string)
@@ -1127,8 +1127,7 @@ func AddDisponibilidadMongo(parameter ...interface{}) (err interface{}) {
 			}
 			var resM map[string]interface{}
 			infoDisp["MesRegistro"] = strconv.Itoa(int(t.Month()))
-			beego.Info("Data send ", infoDisp)
-			Urlmongo := "http://" + beego.AppConfig.String("financieraMongoCurdApiService") + "/arbol_rubro_apropiaciones/RegistrarMovimiento/Cdp"
+			Urlmongo := beego.AppConfig.String("financieraMongoCurdApiService") + "/arbol_rubro_apropiaciones/RegistrarMovimiento/Cdp"
 			if err1 = request.SendJson(Urlmongo, "POST", &resM, &infoDisp); err1 == nil {
 				if resM["Type"].(string) == "success" {
 					err = err1
@@ -1138,22 +1137,22 @@ func AddDisponibilidadMongo(parameter ...interface{}) (err interface{}) {
 			} else {
 				panic("Mongo Not Found")
 			}
-			//beego.Info("infoDisp ", infoDisp)
 		} else {
+			beego.Error(err1.Error())
 			panic(err1.Error())
 		}
 	}).Catch(func(e try.E) {
 		infoDisp := parameter[0].(map[string]interface{})
 		idDisp := int(infoDisp["Id"].(float64))
-		beego.Info("Exepc ", e)
+		beego.Error("Exepc ", e)
 		var resC interface{}
-		Urlcrud := "http://" + beego.AppConfig.String("Urlcrud") + ":" + beego.AppConfig.String("Portcrud") + "/" + beego.AppConfig.String("Nscrud") + "/disponibilidad/DeleteDisponibilidadData/" + strconv.Itoa(idDisp)
+		Urlcrud := beego.AppConfig.String("presupuestoApiService") + "disponibilidad/DeleteDisponibilidadData/" + strconv.Itoa(idDisp)
 		if errDelete := request.SendJson(Urlcrud, "DELETE", &resC, nil); errDelete == nil {
 			fmt.Println("registro borrado correctamente")
 			beego.Info("Data ", resC)
 			err = e
 		} else {
-			fmt.Println("registro borrado correctamente")
+			beego.Error(errDelete.Error())
 		}
 	})
 	return

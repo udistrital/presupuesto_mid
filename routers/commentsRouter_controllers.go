@@ -144,6 +144,15 @@ func init() {
 
     beego.GlobalControllerRouter["github.com/udistrital/presupuesto_mid/controllers:DisponibilidadController"] = append(beego.GlobalControllerRouter["github.com/udistrital/presupuesto_mid/controllers:DisponibilidadController"],
         beego.ControllerComments{
+            Method: "InfoSolicitudDisponibilidad",
+            Router: `/Solicitudes/:vigencia`,
+            AllowHTTPMethods: []string{"get"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["github.com/udistrital/presupuesto_mid/controllers:DisponibilidadController"] = append(beego.GlobalControllerRouter["github.com/udistrital/presupuesto_mid/controllers:DisponibilidadController"],
+        beego.ControllerComments{
             Method: "ValorDisponibilidadesFuenteRubroDependencia",
             Router: `/ValorDisponibilidadesFuenteRubroDependencia`,
             AllowHTTPMethods: []string{"get"},
@@ -173,15 +182,6 @@ func init() {
         beego.ControllerComments{
             Method: "InfoSolicitudDisponibilidadByID",
             Router: `SolicitudById/:id`,
-            AllowHTTPMethods: []string{"get"},
-            MethodParams: param.Make(),
-            Filters: nil,
-            Params: nil})
-
-    beego.GlobalControllerRouter["github.com/udistrital/presupuesto_mid/controllers:DisponibilidadController"] = append(beego.GlobalControllerRouter["github.com/udistrital/presupuesto_mid/controllers:DisponibilidadController"],
-        beego.ControllerComments{
-            Method: "InfoSolicitudDisponibilidad",
-            Router: `Solicitudes/:vigencia`,
             AllowHTTPMethods: []string{"get"},
             MethodParams: param.Make(),
             Filters: nil,

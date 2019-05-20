@@ -569,7 +569,7 @@ func (c *DisponibilidadController) InfoSolicitudDisponibilidadByID() {
 //DetalleSolicitudDisponibilidadByID ....
 func DetalleSolicitudDisponibilidadByID(idStr string) (res models.InfoSolDisp, err error) {
 	var resultado models.SolicitudDisponibilidad
-	if err = request.GetJson(beego.AppConfig.String(" administrativaService")+"solicitud_disponibilidad/"+idStr, &resultado); err == nil {
+	if err = request.GetJson(beego.AppConfig.String("administrativaService")+"solicitud_disponibilidad/"+idStr, &resultado); err == nil {
 
 		var depNes []models.DependenciaNecesidad
 		var jefeDepSol []models.JefeDependencia
@@ -578,12 +578,12 @@ func DetalleSolicitudDisponibilidadByID(idStr string) (res models.InfoSolDisp, e
 		var necesidad []models.Necesidad
 		//var temp models.InfoSolDisp
 		//temp.SolicitudDisponibilidad = &resultado
-		if err := request.GetJson(beego.AppConfig.String(" administrativaService")+"necesidad?limit=1&query=Id:"+strconv.Itoa(resultado.Necesidad.Id), &necesidad); err == nil {
+		if err := request.GetJson(beego.AppConfig.String("administrativaService")+"necesidad?limit=1&query=Id:"+strconv.Itoa(resultado.Necesidad.Id), &necesidad); err == nil {
 			if necesidad != nil {
 				necesidadaux := necesidad[0]
 				resultado.Necesidad = &necesidadaux
 				fmt.Println(necesidadaux)
-				if err := request.GetJson(beego.AppConfig.String(" administrativaService")+"dependencia_necesidad?limit=0&query=Necesidad.Id:"+strconv.Itoa(necesidad[0].Id), &depNes); err == nil {
+				if err := request.GetJson(beego.AppConfig.String("administrativaService")+"dependencia_necesidad?limit=0&query=Necesidad.Id:"+strconv.Itoa(necesidad[0].Id), &depNes); err == nil {
 					//fmt.Println(  beego.AppConfig.String("oikosService") + "dependencia?limit=0&query=Id:" + strconv.Itoa(depNes[0].JefeDependenciaSolicitante))
 					if depNes != nil {
 						if err := request.GetJson(beego.AppConfig.String("coreService")+"jefe_dependencia?limit=0&query=Id:"+strconv.Itoa(depNes[0].JefeDependenciaSolicitante), &jefeDepSol); err == nil {
@@ -1186,7 +1186,6 @@ func AddAnulacionCdpMongo(parameter ...interface{}) (err interface{}) {
 		}
 		dataSend["Afectacion"] = afectacion
 		Urlmongo := beego.AppConfig.String("financieraMongoCurdApiService") + "/arbol_rubro_apropiaciones/RegistrarMovimiento/AnulacionCdp"
-		beego.Info("Data to send ", dataSend)
 		if err1 := request.SendJson(Urlmongo, "POST", &resM, &dataSend); err1 == nil {
 			if resM["Type"].(string) == "success" {
 				err = err1
@@ -1226,10 +1225,10 @@ func CalcularSaldoMovimiento(rubro, fuente, tipo string, cdpID int, valoresSuman
 	} else {
 		for key, value := range res {
 			if valoresSuman[key] {
-				beego.Info("suma ", key)
+				beego.Info("suma ", key, value)
 				saldo += value
 			} else {
-				beego.Info("resta ", key)
+				beego.Info("resta ", key, value)
 				saldo -= value
 			}
 

@@ -234,8 +234,8 @@ func init() {
 
     beego.GlobalControllerRouter["github.com/udistrital/presupuesto_mid/controllers:RegistroPresupuestalController"] = append(beego.GlobalControllerRouter["github.com/udistrital/presupuesto_mid/controllers:RegistroPresupuestalController"],
         beego.ControllerComments{
-            Method: "CargueMasivoPr",
-            Router: `/CargueMasivoPr`,
+            Method: "CargueMasivoRp",
+            Router: `/CargueMasivoRp`,
             AllowHTTPMethods: []string{"post"},
             MethodParams: param.Make(),
             Filters: nil,

@@ -76,7 +76,7 @@ func (c *HomologacionRubroController) CreateHomologacion() {
 	var response map[string]interface{}
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &rubroHomologadorubro); err == nil {
 		beego.Info(rubroHomologadorubro)
-		if err = request.SendJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/rubro_homologado_rubro", "POST", &response, rubroHomologadorubro); err == nil {
+		if err = request.SendJson(beego.AppConfig.String("presupuestoApiService")+"/rubro_homologado_rubro", "POST", &response, rubroHomologadorubro); err == nil {
 			beego.Error("rubro homologado rubro", response)
 			if strings.Compare(response["Type"].(string), "success") == 0 {
 				c.Data["json"] = models.Alert{Type: "success", Code: "S_543", Body: response["Body"]}
@@ -192,8 +192,8 @@ func (c *HomologacionRubroController) GetAllRubrosHomologado() {
 	idStr := c.Ctx.Input.Param(":id")
 	var rubrosHomolRubro []interface{}
 
-	beego.Error("http://" + beego.AppConfig.String("Urlcrud") + ":" + beego.AppConfig.String("Portcrud") + "/" + beego.AppConfig.String("Nscrud") + "/rubro_homologado_rubro/?query=Rubro.Id:" + idStr)
-	if err := request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/rubro_homologado_rubro/?query=Rubro.Id:"+idStr, &rubrosHomolRubro); err == nil {
+	beego.Error(beego.AppConfig.String("presupuestoApiService") + "/rubro_homologado_rubro/?query=Rubro.Id:" + idStr)
+	if err := request.GetJson(beego.AppConfig.String("presupuestoApiService")+"/rubro_homologado_rubro/?query=Rubro.Id:"+idStr, &rubrosHomolRubro); err == nil {
 		beego.Error(rubrosHomolRubro)
 
 		if rubrosHomolRubro != nil {
@@ -224,8 +224,8 @@ func (c *HomologacionRubroController) GetHomologationNumberRubro() {
 	var respuesta map[string]interface{}
 	idStr := c.Ctx.Input.Param(":id")
 
-	beego.Error("http://" + beego.AppConfig.String("Urlcrud") + ":" + beego.AppConfig.String("Portcrud") + "/" + beego.AppConfig.String("Nscrud") + "/rubro_homologado/" + idStr)
-	if err := request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/rubro_homologado/GetRecordsNumberRubroHomologadoRubroById/"+idStr, &respuesta); err == nil {
+	beego.Error(beego.AppConfig.String("presupuestoApiService") + "/rubro_homologado/" + idStr)
+	if err := request.GetJson(beego.AppConfig.String("presupuestoApiService")+"/rubro_homologado/GetRecordsNumberRubroHomologadoRubroById/"+idStr, &respuesta); err == nil {
 		c.Data["json"] = respuesta
 	} else {
 		c.Data["json"] = models.Alert{Type: "error", Code: "E_0458", Body: err}
@@ -249,7 +249,7 @@ func (c *HomologacionRubroController) GetArbolRubrosHomologado() {
 	beego.Error("entidad ", idEntidad, "padre ", idPadre)
 
 	if err == nil {
-		if err := request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/rubro_homologado/ArbolRubros/?idEntidad="+strconv.Itoa(idEntidad)+"&idPadre="+strconv.Itoa(idPadre), &respuesta); err == nil {
+		if err := request.GetJson(beego.AppConfig.String("presupuestoApiService")+"/rubro_homologado/ArbolRubros/?idEntidad="+strconv.Itoa(idEntidad)+"&idPadre="+strconv.Itoa(idPadre), &respuesta); err == nil {
 			c.Data["json"] = respuesta
 		} else {
 			beego.Error("error", err)
@@ -273,8 +273,8 @@ func (c *HomologacionRubroController) GetHomologationNumberEntity() {
 	var respuesta map[string]interface{}
 	idEntidad, err := c.GetInt("idEntidad")
 	beego.Error("entidad ", idEntidad, "error", err)
-	beego.Error("http://" + beego.AppConfig.String("Urlcrud") + ":" + beego.AppConfig.String("Portcrud") + "/" + beego.AppConfig.String("Nscrud") + "/rubro_homologado/?idEntidad=" + strconv.Itoa(idEntidad))
-	if err := request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/rubro_homologado/GetRecordsNumberByEntity/?idEntidad="+strconv.Itoa(idEntidad), &respuesta); err == nil {
+	beego.Error(beego.AppConfig.String("presupuestoApiService") + "/rubro_homologado/?idEntidad=" + strconv.Itoa(idEntidad))
+	if err := request.GetJson(beego.AppConfig.String("presupuestoApiService")+"/rubro_homologado/GetRecordsNumberByEntity/?idEntidad="+strconv.Itoa(idEntidad), &respuesta); err == nil {
 		c.Data["json"] = respuesta
 	} else {
 		c.Data["json"] = models.Alert{Type: "error", Code: "E_0458", Body: err}

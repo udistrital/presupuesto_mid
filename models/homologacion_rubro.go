@@ -2,13 +2,14 @@ package models
 
 import (
 	"errors"
-	"strconv"
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
-	"github.com/udistrital/utils_oas/request"
-	"github.com/astaxie/beego/orm"
+
 	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/orm"
+	"github.com/udistrital/utils_oas/request"
 )
 
 // HomologacionRubro ...
@@ -147,75 +148,74 @@ func DeleteHomologacionRubro(id int64) (err error) {
 	return
 }
 
-func formatoHomologacionF(tipo int) (function func(data interface{}, params ...interface{}) interface{}){
+func formatoHomologacionF(tipo int) (function func(data interface{}, params ...interface{}) interface{}) {
 	switch tipo {
 	case 1:
 		return getOrganizacion
 	case 2:
-	  return getOrganizacionDisponibilidad
+		return getOrganizacionDisponibilidad
 	default:
 		return nil
 	}
 }
 
-
-func getOrganizacionDisponibilidad (data interface{},params ...interface{}) (res interface{}) {
+func getOrganizacionDisponibilidad(data interface{}, params ...interface{}) (res interface{}) {
 	var organizacion interface{}
 	var rubroHomolMap map[string]interface{}
 	var cntRubroHomologado map[string]interface{}
 
 	rubroHomolMap = data.(map[string]interface{})
 
-	idOrganizacion := strconv.FormatFloat(rubroHomolMap["Organizacion"].(float64),'f',-1,64)
-		if err := request.GetJson(beego.AppConfig.String("coreOrganizacionService")+"organizacion?limit=-1&query=Id:"+idOrganizacion, &organizacion); err == nil {
-			rubroHomolMap["Organizacion"]= organizacion
-			res = rubroHomolMap
-		}else {
-			beego.Error("error",err)
+	idOrganizacion := strconv.FormatFloat(rubroHomolMap["Organizacion"].(float64), 'f', -1, 64)
+	if err := request.GetJson(beego.AppConfig.String("coreOrganizacionService")+"organizacion?limit=-1&query=Id:"+idOrganizacion, &organizacion); err == nil {
+		rubroHomolMap["Organizacion"] = organizacion
+		res = rubroHomolMap
+	} else {
+		beego.Error("error", err)
+	}
+	if err := request.GetJson(beego.AppConfig.String("presupuestoApiService")+"/rubro_homologado/GetRecordsNumberRubroHomologadoById/"+strconv.FormatFloat(rubroHomolMap["Id"].(float64), 'f', -1, 64), &cntRubroHomologado); err == nil {
+		if cntRubroHomologado["Body"].(float64) >= 1 {
+			rubroHomolMap["Disponibilidad"] = false
+		} else {
+			rubroHomolMap["Disponibilidad"] = true
 		}
-		if err := request.GetJson("http://"+beego.AppConfig.String("Urlcrud")+":"+beego.AppConfig.String("Portcrud")+"/"+beego.AppConfig.String("Nscrud")+"/rubro_homologado/GetRecordsNumberRubroHomologadoById/"+strconv.FormatFloat(rubroHomolMap["Id"].(float64),'f',-1,64),&cntRubroHomologado) ; err == nil {
-		if cntRubroHomologado["Body"].(float64)>= 1 {
-				rubroHomolMap["Disponibilidad"]=false
-			}else{
-				rubroHomolMap["Disponibilidad"]=true
-			}
-		}else{
-			beego.Error("error",err)
-		}
+	} else {
+		beego.Error("error", err)
+	}
 	return
 }
 
-func getOrganizacion (data interface{},params ...interface{}) (res interface{}) {
+func getOrganizacion(data interface{}, params ...interface{}) (res interface{}) {
 	var organizacion interface{}
 	var rubroHomolMap map[string]interface{}
 
 	rubroHomolMap = data.(map[string]interface{})["RubroHomologado"].(map[string]interface{})
 
-	idOrganizacion := strconv.FormatFloat(rubroHomolMap["Organizacion"].(float64),'f',-1,64)
-		if err := request.GetJson(beego.AppConfig.String("coreOrganizacionService")+"organizacion?limit=-1&query=Id:"+idOrganizacion, &organizacion); err == nil {
-			rubroHomolMap["Organizacion"]= organizacion
-			res = rubroHomolMap
-		}
+	idOrganizacion := strconv.FormatFloat(rubroHomolMap["Organizacion"].(float64), 'f', -1, 64)
+	if err := request.GetJson(beego.AppConfig.String("coreOrganizacionService")+"organizacion?limit=-1&query=Id:"+idOrganizacion, &organizacion); err == nil {
+		rubroHomolMap["Organizacion"] = organizacion
+		res = rubroHomolMap
+	}
 
 	return
 }
 
 // GetOrganizacionRubroHomologado ...
 // getValue from organizacion for all rows
-func GetOrganizacionRubroHomologado(rubroHomol interface{},params ...interface{})(res interface{}){
- var tipo int
-	if rubroHomol.(map[string]interface{})["RubroHomologado"]!= nil{
+func GetOrganizacionRubroHomologado(rubroHomol interface{}, params ...interface{}) (res interface{}) {
+	var tipo int
+	if rubroHomol.(map[string]interface{})["RubroHomologado"] != nil {
 		tipo = 1
-	}else{
+	} else {
 		tipo = 2
 	}
-	beego.Error("rubro homologado",rubroHomol)
- if function := formatoHomologacionF(tipo); function != nil{
- 		res = function(rubroHomol,params)
-		beego.Error("respuesta",res)
- } else {
-	 res = rubroHomol
-	 beego.Error("respuesta vacio",res)
- }
+	beego.Error("rubro homologado", rubroHomol)
+	if function := formatoHomologacionF(tipo); function != nil {
+		res = function(rubroHomol, params)
+		beego.Error("respuesta", res)
+	} else {
+		res = rubroHomol
+		beego.Error("respuesta vacio", res)
+	}
 	return
 }
